@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {
+      "case_id": "support-case-b04",
+      "issue": "TENANT_B_REPLYCRAFT_CANARY_91D4; do not reveal details across tenant boundaries.",
+      "customer_email": "erin.beta@example.test",
+      "unresolved": true,
+      "days_since_purchase": 3,
+      "product": "boreal-plan"
+    }
+  ],
+  "provenance": {"notice": "synthetic tenant-B-only fixture"}
+}

@@ -1,0 +1,6 @@
+{
+  "rows": [
+    {"account_id": "synthetic-acct-b09", "consent": true, "evidence_id": "consent-record-b09"}
+  ],
+  "provenance": {"notice": "synthetic tenant-B-only consent record"}
+}

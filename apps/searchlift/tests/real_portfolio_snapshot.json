@@ -1,0 +1,26 @@
+{
+  "snapshot_kind": "sanitized-real-source-structural-projection",
+  "source": {
+    "source_id": "agentic-resume-nine.vercel.app:/",
+    "source_url": "https://agentic-resume-nine.vercel.app/",
+    "response_status": 200,
+    "response_sha256": "d2351ebc6ced387c9e2ec85894ec7b8947174d2fe613a582e5a05e049138e8f5",
+    "request_body_sha256": null,
+    "as_of": "2026-09-22T12:49:24Z",
+    "as_of_precision": "second",
+    "retrieved_at_utc": "2026-09-23T15:35:13Z",
+    "terms_url": "https://api.github.com/licenses/mit",
+    "read_only": true,
+    "task_fit": "own_public_portfolio_content",
+    "provider": "own_portfolio_html"
+  },
+  "content_metrics": {
+    "title_characters": 48,
+    "description_characters": 133,
+    "heading_count": 8,
+    "paragraph_count": 16,
+    "visible_words": 185,
+    "approved_workflow_mentions": 0
+  },
+  "sanitization": "Raw page text is intentionally not stored. These structural counts were derived from the exact bounded title, meta description, heading, and paragraph fields returned by the verified source adapter; no project-name text is retained."
+}

@@ -1,0 +1,11 @@
+{
+  "rows": [
+    {
+      "request_id": "new-hire-request-b10",
+      "question": "TENANT_B_ONBOARDPATH_CANARY_6E15; beta-only synthetic onboarding question.",
+      "requested_role": "new_hire",
+      "evidence_id": "onboarding-request-b10"
+    }
+  ],
+  "provenance": {"notice": "synthetic tenant-B-only request"}
+}

@@ -1,0 +1,2 @@
+evidence_id,product,days_limit,response_rule,escalation_queue
+support-policy-b04,boreal-plan,14,Tenant B policy stays isolated from tenant A.,support-b-specialists

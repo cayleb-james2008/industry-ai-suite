@@ -1,0 +1,11 @@
+{
+  "rows": [
+    {
+      "doc_id": "handoff-guide-b06",
+      "title": "Beta handoff guide",
+      "body": "TENANT_B_HANDOFF_CANARY_7B20; route beta-only requests to the beta queue.",
+      "team": "beta-operations"
+    }
+  ],
+  "provenance": {"notice": "synthetic tenant-B-only document"}
+}

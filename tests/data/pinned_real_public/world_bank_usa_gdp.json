@@ -1,0 +1,33 @@
+{
+  "source": {
+    "provider": "world_bank_usa_gdp",
+    "status": "VERIFIED_SOURCE",
+    "request_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+    "response_status": 200,
+    "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+    "request_body_sha256": null,
+    "retrieved_at_utc": "2026-09-23T18:51:34Z",
+    "task_fit": "public_us_annual_gdp",
+    "read_only": true,
+    "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+    "terms_license": "CC BY-4.0",
+    "attribution": "World Bank, GDP (current US$), United States, indicator NY.GDP.MKTP.CD; annual observations."
+  },
+  "records": [
+    {"source_id": "USA:NY.GDP.MKTP.CD:2025", "as_of": "2025", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2025", "value": 30769700000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2024", "as_of": "2024", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2024", "value": 29298013000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2023", "as_of": "2023", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2023", "value": 27811517000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2022", "as_of": "2022", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2022", "value": 26054614000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2021", "as_of": "2021", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2021", "value": 23725645000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2020", "as_of": "2020", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2020", "value": 21375281000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2019", "as_of": "2019", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2019", "value": 21539982000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2018", "as_of": "2018", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2018", "value": 20656516000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2017", "as_of": "2017", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2017", "value": 19612102000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2016", "as_of": "2016", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2016", "value": 18804913000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2015", "as_of": "2015", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2015", "value": 18295019000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2014", "as_of": "2014", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2014", "value": 17608138000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2013", "as_of": "2013", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2013", "value": 16880683000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2012", "as_of": "2012", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2012", "value": 16253970000000}},
+    {"source_id": "USA:NY.GDP.MKTP.CD:2011", "as_of": "2011", "as_of_precision": "year", "data": {"countryiso3code": "USA", "date": "2011", "value": 15599732000000}}
+  ]
+}

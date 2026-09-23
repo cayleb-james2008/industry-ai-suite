@@ -1,0 +1,6 @@
+{
+  "rows": [
+    {"doc_id": "restricted-personnel-206", "body": "TENANT_A_PERSONNEL_CANARY_NOT_FOR_KNOWLEDGE_WORKERS"}
+  ],
+  "provenance": {"classification": "synthetic restricted test fixture; do not load for this role"}
+}

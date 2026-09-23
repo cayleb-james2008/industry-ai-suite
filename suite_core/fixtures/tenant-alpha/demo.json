@@ -1,0 +1,11 @@
+{
+  "provenance": {"source": "synthetic-demo", "purpose": "safe first-run example"},
+  "rows": [
+    {
+      "case_id": "demo-case-001",
+      "summary": "A synthetic policy question needs a human review.",
+      "evidence_id": "demo-policy-001",
+      "email": "reader@example.invalid"
+    }
+  ]
+}

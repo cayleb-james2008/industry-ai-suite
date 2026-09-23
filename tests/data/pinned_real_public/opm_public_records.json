@@ -1,0 +1,18 @@
+{
+  "provider": "federal_register_opm",
+  "request_url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bagency_ids%5D%5B%5D=406&per_page=10&order=newest",
+  "evidence": [
+    {
+      "source_id": "2026-19222",
+      "source_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222/employment-in-the-excepted-service",
+      "response_status": 200,
+      "response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+      "as_of": "2026-09-18",
+      "as_of_precision": "day",
+      "retrieved_at_utc": "2026-09-23T18:51:34Z",
+      "terms": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site",
+      "read_only": true,
+      "document_type": "Proposed Rule"
+    }
+  ]
+}

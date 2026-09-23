@@ -1,0 +1,2 @@
+evidence_id,account_id,priority,renewal_window,approved_context,contact_email
+account-context-b09,synthetic-acct-b09,high,2026-Q3,"TENANT_B_PIPELINE_CANARY_48AC; no cross-tenant use.",devon.beta@example.test

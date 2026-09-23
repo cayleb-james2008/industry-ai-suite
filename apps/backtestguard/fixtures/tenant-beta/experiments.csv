@@ -1,0 +1,2 @@
+experiment_id,dataset_id,feature_cutoff,decision_date,label_available_at,holdout_reused,metric
+BG-B-CANARY,tenant-beta-private,2026-09-02,2026-09-01,2026-09-03,false,0.99

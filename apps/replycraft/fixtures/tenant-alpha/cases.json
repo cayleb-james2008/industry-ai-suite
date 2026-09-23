@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {
+      "case_id": "support-case-104",
+      "issue": "A duplicate annual subscription charge is still visible after the customer tried the self-service reversal.",
+      "customer_email": "riley.alpha@example.test",
+      "unresolved": true,
+      "days_since_purchase": 45,
+      "product": "atlas-plan"
+    }
+  ],
+  "provenance": {"notice": "synthetic training fixture; no customer data"}
+}

@@ -1,0 +1,6 @@
+{
+  "rows": [
+    {"record_id": "personnel-record-private-410", "content": "TENANT_A_PRIVATE_PERSONNEL_CANARY_DO_NOT_DISCLOSE"}
+  ],
+  "provenance": {"classification": "synthetic restricted fixture; never loaded for new_hire"}
+}

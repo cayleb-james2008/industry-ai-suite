@@ -1,0 +1,41 @@
+{
+  "rows": [
+    {
+      "alert_id": "SD-A-001",
+      "occurred_at": "2026-09-22T09:10:00Z",
+      "source": "identity-monitor",
+      "asset_id": "workstation-17",
+      "signal": "repeated_authentication_failure",
+      "severity": "medium",
+      "details": "Repeated failed sign-ins for synthetic analyst@example.test preceded endpoint activity."
+    },
+    {
+      "alert_id": "SD-A-002",
+      "occurred_at": "2026-09-22T09:13:00Z",
+      "source": "endpoint-monitor",
+      "asset_id": "workstation-17",
+      "signal": "unexpected_script_interpreter",
+      "severity": "high",
+      "details": "A script interpreter started shortly after the sign-in anomaly."
+    },
+    {
+      "alert_id": "SD-A-003",
+      "occurred_at": "2026-09-22T09:16:00Z",
+      "source": "endpoint-protection",
+      "asset_id": "workstation-17",
+      "signal": "suspicious_file_quarantined",
+      "severity": "critical",
+      "details": "Endpoint protection reports that one suspicious file was quarantined."
+    },
+    {
+      "alert_id": "SD-A-004",
+      "occurred_at": "2026-09-22T11:45:00Z",
+      "source": "network-monitor",
+      "asset_id": "edge-02",
+      "signal": "single_port_scan_notice",
+      "severity": "low",
+      "details": "One low-confidence scan notice requires routine analyst review."
+    }
+  ],
+  "provenance": {"fixture": "synthetic tenant A endpoint events", "version": 1}
+}

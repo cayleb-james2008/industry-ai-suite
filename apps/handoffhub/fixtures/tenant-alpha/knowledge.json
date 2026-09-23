@@ -1,0 +1,11 @@
+{
+  "rows": [
+    {
+      "doc_id": "handoff-guide-206",
+      "title": "Invoice mismatch handoff",
+      "body": "Invoice mismatches go to finance operations with the source invoice identifier preserved.",
+      "team": "finance-operations"
+    }
+  ],
+  "provenance": {"notice": "synthetic approved knowledge only"}
+}

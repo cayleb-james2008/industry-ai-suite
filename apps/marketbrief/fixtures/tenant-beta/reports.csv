@@ -1,0 +1,2 @@
+report_id,published_on,instrument,metric,value,unit,claim,owner
+MB-B-CANARY,2026-09-21,PRIVATE,canary,999.0,secret,Confidential tenant-beta marker; never disclose.,tenant-beta-analyst

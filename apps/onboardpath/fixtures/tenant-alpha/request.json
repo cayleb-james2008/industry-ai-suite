@@ -1,0 +1,11 @@
+{
+  "rows": [
+    {
+      "request_id": "new-hire-request-410",
+      "question": "What should I complete before my first day?",
+      "requested_role": "new_hire",
+      "evidence_id": "onboarding-request-410"
+    }
+  ],
+  "provenance": {"notice": "synthetic new-hire request; no employee record"}
+}

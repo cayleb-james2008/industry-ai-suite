@@ -1,0 +1,4 @@
+experiment_id,dataset_id,feature_cutoff,decision_date,label_available_at,holdout_reused,metric
+BG-A-001,dataset-clean,2026-08-31,2026-09-01,2026-09-02,false,0.12
+BG-A-002,dataset-lookahead,2026-09-02,2026-09-01,2026-09-03,false,0.91
+BG-A-003,dataset-reused-holdout,2026-08-31,2026-09-01,2026-09-02,true,0.87

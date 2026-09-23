@@ -1,0 +1,6 @@
+{
+  "rows": [
+    {"account_id": "synthetic-acct-310", "consent": false, "evidence_id": "consent-record-310"}
+  ],
+  "provenance": {"notice": "synthetic negative consent fixture; no account context included"}
+}

@@ -1,0 +1,21 @@
+{
+  "provider": "cisa_kev",
+  "example": {
+    "source_id": "CVE-2021-27101",
+    "date_added": "2021-11-03",
+    "due_date": "2021-11-17"
+  },
+  "evidence": [
+    {
+      "source_id": "CVE-2021-27101",
+      "source_url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+      "response_status": 200,
+      "response_sha256": "e4988831e6d3c9036dc4279cdb7f5e369dadf1b245c7136aa719fca169b894fd",
+      "as_of_precision": "day",
+      "retrieved_at_utc": "2026-09-23T16:21:57Z",
+      "terms_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "read_only": true,
+      "task_fit": "public_kev_vulnerability_context"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "rows": [
+    {"account_id": "synthetic-acct-309", "consent": true, "evidence_id": "consent-record-309"}
+  ],
+  "provenance": {"notice": "synthetic explicit consent control record"}
+}

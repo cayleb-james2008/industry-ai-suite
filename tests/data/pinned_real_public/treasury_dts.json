@@ -1,0 +1,26 @@
+{
+  "source": {
+    "provider": "treasury_dts",
+    "status": "VERIFIED_SOURCE",
+    "request_url": "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/dts/deposits_withdrawals_operating_cash?page%5Bsize%5D=10&sort=-record_date",
+    "response_status": 200,
+    "response_sha256": "bde7791b9c12c297dd1c05af620f3618951e5c02b8d20e66a087bb0768f059af",
+    "request_body_sha256": null,
+    "retrieved_at_utc": "2026-09-23T16:21:57Z",
+    "task_fit": "public_treasury_cash_reporting",
+    "read_only": true,
+    "terms_url": "https://fiscaldata.treasury.gov/api-documentation/"
+  },
+  "records": [
+    {
+      "source_id": "2026-09-21:II:1",
+      "as_of": "2026-09-21",
+      "as_of_precision": "day",
+      "data": {
+        "transaction_catg": "Dept of Agriculture (USDA) - misc",
+        "transaction_type": "Deposits",
+        "transaction_today_amt": "12"
+      }
+    }
+  ]
+}
