@@ -1,4 +1,4 @@
-"""P2a2 integration checks using separately pinned real-source projections."""
+"""P2a2 integration checks, including the explicit historical Vercel projection."""
 
 import json
 import unittest
@@ -76,7 +76,7 @@ class P2a2IntegrationTests(unittest.TestCase):
         self.assertEqual(receipt["human_handoff"]["owner"], "quant-research-reviewer")
         self.assertEqual(receipt["side_effect_count"], 0)
 
-    def test_searchlift_pinned_fresh_read_maps_metrics_to_one_cited_draft(self) -> None:
+    def test_searchlift_historical_vercel_snapshot_maps_to_one_cited_draft(self) -> None:
         capture = json.loads(SEARCHLIFT_SNAPSHOT.read_text(encoding="utf-8"))
         source = capture["source"]
         issues, evidence = _analyze_portfolio_metrics(capture["content_metrics"], source)

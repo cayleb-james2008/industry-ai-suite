@@ -25,7 +25,9 @@ from ..privacy import redact
 MAX_RESPONSE_BYTES = 2_000_000
 MAX_TIMEOUT_SECONDS = 8.0
 _GITHUB_API = "https://api.github.com"
-_PORTFOLIO_URL = "https://agentic-resume-nine.vercel.app/"
+_PORTFOLIO_HOST = "cayleb-james2008.github.io"
+_PORTFOLIO_PATH = "/agentic-resume/"
+_PORTFOLIO_URL = f"https://{_PORTFOLIO_HOST}{_PORTFOLIO_PATH}"
 _WORLD_BANK_TERMS_URL = "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
 _FEDERAL_REGISTER_AGENCY_ID = 406
 class Provider(str, Enum):
@@ -192,7 +194,7 @@ _ALLOWED_PATHS = {
     ),
     "api.worldbank.org": re.compile(r"^/v2/country/USA/indicator/NY\.GDP\.MKTP\.CD$"),
     "data.worldbank.org": re.compile(r"^/indicator/NY\.GDP\.MKTP\.CD$"),
-    "agentic-resume-nine.vercel.app": re.compile(r"^/$"),
+    _PORTFOLIO_HOST: re.compile(re.escape(_PORTFOLIO_PATH)),
     "www.federalregister.gov": re.compile(
         r"^/api/v1/documents\.json$|^/documents/\d{4}/\d{2}/\d{2}/\d{4}-\d{4,6}(?:/[^/?#]+)?$"
     ),
@@ -268,7 +270,8 @@ def _validate_url(url: str) -> None:
     parsed = urllib.parse.urlsplit(url)
     allowed = _ALLOWED_PATHS.get(parsed.hostname or "")
     if (parsed.scheme != "https" or parsed.username or parsed.password or parsed.port
-            or parsed.fragment or allowed is None or not allowed.fullmatch(parsed.path)):
+            or parsed.fragment or allowed is None or not allowed.fullmatch(parsed.path)
+            or (parsed.hostname == _PORTFOLIO_HOST and parsed.query)):
         raise DataUnavailable("request URL is outside the fixed HTTPS host/path allowlist")
 
 

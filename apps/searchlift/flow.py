@@ -1,9 +1,10 @@
-"""Inspect tenant-scoped local HTML and draft deterministic SEO/usability fixes offline."""
+"""Inspect tenant-scoped local HTML and draft deterministic structural findings."""
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 import secrets
 import time
 from collections import Counter
@@ -11,6 +12,7 @@ from collections.abc import Mapping
 from html.parser import HTMLParser
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TypedDict
 from urllib.parse import urlsplit
 
 from apps._ai_receipts import complete_grounded
@@ -32,6 +34,11 @@ from suite_core import (
     fetch_live,
     redact,
 )
+from suite_core.sources.portfolio import (
+    MAX_PROJECTED_HEADINGS,
+    MAX_PROJECTED_PARAGRAPHS,
+    MAX_PROJECTED_TEXT_CHARS,
+)
 
 APP_DIR = Path(__file__).resolve().parent
 FIXTURE_ROOT = APP_DIR / "fixtures"
@@ -43,8 +50,8 @@ TENANT_EVIDENCE = {
     TENANT_B: ("SL-B-HOME",),
 }
 PROTECTED_CANARIES = ("SEARCHLIFT_TENANT_B_CANARY_85C2",)
-PORTFOLIO_URL = "https://agentic-resume-nine.vercel.app/"
-PORTFOLIO_SOURCE_ID = "agentic-resume-nine.vercel.app:/"
+PORTFOLIO_URL = "https://cayleb-james2008.github.io/agentic-resume/"
+PORTFOLIO_SOURCE_ID = "cayleb-james2008.github.io:/agentic-resume/"
 PORTFOLIO_TERMS_URL = "https://api.github.com/licenses/mit"
 APPROVED_WORKFLOWS = (
     "LedgerBridge", "MarketBrief", "ChainWatch", "BacktestGuard", "ReplyCraft",
@@ -60,7 +67,7 @@ RULES = {
     "CONTENT_HEADINGS": ("P2", "No section headings were returned in the bounded visible-text sample."),
     "STALE_ROSTER": (
         "P1",
-        "The captured public page does not include all currently approved suite workflows; its roster is stale for this suite.",
+        "The bounded text projection contains fewer than ten approved workflow names; unseen page content was not assessed.",
     ),
     "LOCAL_LINK": ("P2", "One or more local links point outside the site folder or to a missing file."),
     "THIN_CONTENT": ("P3", "The page has fewer than 40 visible words; confirm whether visitors have enough useful detail."),
@@ -76,6 +83,16 @@ DRAFTS = {
     "LOCAL_LINK": "Check each flagged local link and point it to an existing page inside this site folder.",
     "THIN_CONTENT": "Add useful, verified details that answer a visitor's likely question; avoid filler or unsupported promises.",
 }
+
+
+class _PortfolioMetrics(TypedDict):
+    title_characters: int
+    description_characters: int
+    heading_count: int
+    paragraph_count: int
+    visible_words: int
+    approved_workflow_mentions: int
+    approved_workflow_names: list[str]
 
 
 class _PageFacts(HTMLParser):
@@ -261,7 +278,7 @@ def analyze_site(site_root: Path) -> tuple[list[dict[str, object]], list[dict[st
     return issues, evidence
 
 
-def _portfolio_metrics(data: Mapping[str, object]) -> dict[str, int]:
+def _portfolio_metrics(data: Mapping[str, object]) -> _PortfolioMetrics:
     if not isinstance(data, Mapping):
         raise ValueError("bounded portfolio content has an invalid structure")
     title = data.get("title")
@@ -284,15 +301,18 @@ def _portfolio_metrics(data: Mapping[str, object]) -> dict[str, int]:
     for field in visible_fields:
         sentinel.check(field, protected_canaries=PROTECTED_CANARIES)
     searchable_text = "\n".join(visible_fields).casefold()
+    matched_workflows = [
+        workflow for workflow in APPROVED_WORKFLOWS
+        if re.search(rf"\b{re.escape(workflow.casefold())}\b", searchable_text)
+    ]
     return {
         "title_characters": len(title),
         "description_characters": len(description),
         "heading_count": len(headings),
         "paragraph_count": len(paragraphs),
         "visible_words": sum(len(part.split()) for part in (*headings, *paragraphs)),
-        "approved_workflow_mentions": sum(
-            workflow.casefold() in searchable_text for workflow in APPROVED_WORKFLOWS
-        ),
+        "approved_workflow_mentions": len(matched_workflows),
+        "approved_workflow_names": matched_workflows,
     }
 
 
@@ -460,6 +480,22 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
     }
     issues, evidence = _analyze_portfolio_metrics(metrics, source)
     priorities = Counter(str(issue["priority"]) for issue in issues)
+    name_count = metrics["approved_workflow_mentions"]
+    name_coverage = {
+        "count": f"{name_count}/{len(APPROVED_WORKFLOWS)}",
+        "verdict": "PASS" if name_count == len(APPROVED_WORKFLOWS) else "REFUTED",
+        "names_observed": metrics["approved_workflow_names"],
+        "fields_checked": ["title", "meta description", "heading text", "paragraph text"],
+        "limits": {
+            "maximum_headings": MAX_PROJECTED_HEADINGS,
+            "maximum_paragraphs": MAX_PROJECTED_PARAGRAPHS,
+            "maximum_characters_per_captured_item": MAX_PROJECTED_TEXT_CHARS,
+        },
+        "coverage_note": (
+            "Counts distinct approved names in the bounded parser projection only; "
+            "omitted or truncated page content was not assessed."
+        ),
+    }
     return {
         "app": "SearchLift",
         "status": "VERIFIED_SOURCE",
@@ -469,6 +505,7 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
             "issue_count": len(issues),
             "priority_counts": {key: priorities.get(key, 0) for key in ("P1", "P2", "P3")},
             "issues": issues,
+            "name_coverage": name_coverage,
             "draft_notice": "Drafts are suggestions for human review; no file was edited or published.",
         },
         "evidence": evidence,

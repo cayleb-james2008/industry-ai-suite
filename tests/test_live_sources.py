@@ -363,8 +363,8 @@ class LiveSourcesAdversarialTests(unittest.TestCase):
             Provider.OWN_PORTFOLIO_HTML, transport, TaskFit.OWN_PORTFOLIO_CONTENT,
         )
         record = result.records[0]
-        self.assertEqual(result.request_url, "https://agentic-resume-nine.vercel.app/")
-        self.assertEqual(record.source_id, "agentic-resume-nine.vercel.app:/")
+        self.assertEqual(result.request_url, "https://cayleb-james2008.github.io/agentic-resume/")
+        self.assertEqual(record.source_id, "cayleb-james2008.github.io:/agentic-resume/")
         self.assertEqual(record.as_of, "2026-09-22T12:49:24Z")
         self.assertEqual(record.as_of_precision, "second")
         self.assertEqual(record.data["title"], "Proof portfolio")

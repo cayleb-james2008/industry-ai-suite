@@ -133,7 +133,7 @@ class SearchLiftFlowTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 analyze_site(site)
 
-    def test_real_snapshot_has_provenance_and_three_cold_offline_runs_match(self) -> None:
+    def test_historical_vercel_snapshot_is_pinned_and_three_cold_offline_runs_match(self) -> None:
         snapshot_bytes = REAL_SNAPSHOT.read_bytes()
         self.assertEqual(hashlib.sha256(snapshot_bytes).hexdigest(), REAL_SNAPSHOT_SHA256)
         snapshot = json.loads(snapshot_bytes)
