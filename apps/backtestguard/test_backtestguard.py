@@ -122,6 +122,8 @@ class BacktestGuardTests(unittest.TestCase):
         self.assertEqual(result["source_status"], "VERIFIED_SOURCE")
         self.assertEqual(result["job_verdict"], "UNVERIFIED")
         self.assertEqual(analysis["record_count"], 15)
+        self.assertIn("LIMITED", analysis["label"])
+        self.assertIn("not a completed backtest", analysis["label"])
         self.assertEqual(analysis["experiment_parameters"]["decision_cutoff_year"], 2020)
         self.assertEqual(len(analysis["experiment_parameters"]["training_years"]), 10)
         self.assertEqual(analysis["experiment_parameters"]["holdout_years"], [2021, 2022, 2023, 2024, 2025])
@@ -138,6 +140,33 @@ class BacktestGuardTests(unittest.TestCase):
         self.assertEqual(result["ai_status"], "NON-AI / DETERMINISTIC FALLBACK")
         self.assertEqual(result["ai_completion_verdict"], "UNVERIFIED")
         self.assertEqual(result["side_effect_count"], 0)
+
+    def test_live_rejects_a_citation_only_ai_response(self):
+        source = _adversarial_stub_transport(
+            Provider.WORLD_BANK_USA_GDP, task_fit=TaskFit.PUBLIC_US_GDP
+        )
+        ai = {
+            "ai_status": "AI / PROVIDER",
+            "ai_invoked": True,
+            "ai_output": "[evidence:USA:NY.GDP.MKTP.CD:2020]",
+            "ai_failure": None,
+            "ai_handoff": None,
+            "ai_evidence": {"grounded": True, "response": "[evidence:USA:NY.GDP.MKTP.CD:2020]"},
+            "ai_evidence_provenance": "app-reported",
+        }
+        with (
+            patch("apps.backtestguard.flow.fetch_live", return_value=source),
+            patch("apps.backtestguard.flow.complete_grounded", return_value=ai),
+        ):
+            result = run_live(ai_client=object())
+
+        self.assertEqual(result["ai_status"], "AI OUTPUT REJECTED (NON-SUBSTANTIVE)")
+        self.assertTrue(result["ai_invoked"])
+        self.assertIsNone(result["ai_output"])
+        self.assertFalse(result["ai_evidence"]["grounded"])
+        self.assertEqual(result["ai_evidence"]["rejection_reason"], "non_substantive_summary")
+        self.assertIn("deterministic chronology", result["ai_handoff"])
+        self.assertEqual(result["ai_completion_verdict"], "UNVERIFIED")
 
     def test_live_unavailable_does_not_fall_back_to_fixture(self):
         with patch("apps.backtestguard.flow.fetch_live", side_effect=DataUnavailable("timeout")):

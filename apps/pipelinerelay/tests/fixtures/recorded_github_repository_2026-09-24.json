@@ -1,0 +1,28 @@
+{
+  "fixture_kind": "recorded_real_source_projection_not_raw_response",
+  "source": {
+    "provider": "github_repository",
+    "request_url": "https://api.github.com/repos/pytest-dev/pytest",
+    "response_status": 200,
+    "response_sha256": "2ea0173b9dcbbcbc1ae96dc12c26de17811a2dfa840d9e7768e5c98d9518e569",
+    "retrieved_at_utc": "2026-09-24T10:04:21Z",
+    "task_fit": "public_repository_metadata",
+    "terms_url": "https://api.github.com/licenses/mit"
+  },
+  "record": {
+    "source_id": "37489525",
+    "source_url": "https://api.github.com/repos/pytest-dev/pytest",
+    "as_of": "2026-09-24T07:25:34Z",
+    "as_of_precision": "second",
+    "data": {
+      "id": 37489525,
+      "full_name": "pytest-dev/pytest",
+      "html_url": "https://github.com/pytest-dev/pytest",
+      "default_branch": "main",
+      "license": {
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit"
+      }
+    }
+  }
+}

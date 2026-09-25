@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import secrets
 import tempfile
 import time
@@ -27,6 +28,7 @@ SCHEMA = FixtureSchema({"experiment_id": str, "dataset_id": str, "feature_cutoff
                         "holdout_reused": bool, "metric": float})
 ALPHA_IDS = ("BG-A-001", "BG-A-002", "BG-A-003")
 BETA_IDS = ("BG-B-CANARY",)
+_EVIDENCE_REFERENCE = re.compile(r"\[evidence:[A-Za-z0-9_.:-]{1,128}\]")
 
 
 @dataclass(frozen=True)
@@ -154,6 +156,31 @@ def _live_failure(status: str, reason: str, source_metadata: dict[str, object] |
     }
 
 
+def _reject_non_substantive_summary(ai: dict[str, object]) -> dict[str, object]:
+    output = ai.get("ai_output")
+    if not isinstance(output, str):
+        return ai
+    explanation = _EVIDENCE_REFERENCE.sub("", output).strip()
+    if len(explanation.split()) >= 5:
+        return ai
+
+    evidence = ai.get("ai_evidence")
+    if isinstance(evidence, dict):
+        evidence = {**evidence, "grounded": False, "rejection_reason": "non_substantive_summary"}
+    return {
+        **ai,
+        "ai_status": "AI OUTPUT REJECTED (NON-SUBSTANTIVE)",
+        "ai_availability": "provider responded; application rejected the non-answer",
+        "ai_output": None,
+        "ai_failure": "the model response contained no substantive explanation",
+        "ai_handoff": (
+            "No validated AI explanation is available. Review the deterministic chronology "
+            "findings and source IDs manually."
+        ),
+        "ai_evidence": evidence,
+    }
+
+
 def run_live(ai_client: object | None = None) -> dict[str, object]:
     """Audit chronological splits over actual USA GDP history; never use experiment fixtures."""
     try:
@@ -225,7 +252,7 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
     ]
     future_years = [year for year in years if year > cutoff_year]
     analysis = {
-        "label": "PUBLIC GDP CHRONOLOGY / PROVENANCE CHECK — not a market-return backtest",
+        "label": "LIMITED PUBLIC GDP CHRONOLOGY / PROVENANCE CHECK — not a completed backtest",
         "experiment_record_status": "UNVERIFIED — no external experiment log or experiment owner record was supplied",
         "experiment_parameters": {
             "source_series": "World Bank USA NY.GDP.MKTP.CD (GDP current US$)",
@@ -254,15 +281,27 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
         "observations": observations,
     }
     evidence_ids = tuple(values_by_year[year][0].source_id for year in years)
+    summary_context = {
+        "record_count": analysis["record_count"],
+        "training_years": training_years,
+        "holdout_years": holdout_years,
+        "chronology_passes": control_valid,
+        "external_experiment_record": "not supplied",
+        "full_job_verdict": "UNVERIFIED",
+    }
     ai = complete_grounded(
         ai_client,
-        "Explain this actual World Bank GDP observation-year split and future-data leakage probe using only the cited records. Do not describe it as a market-return backtest or external experiment. Data: " + json.dumps(analysis, sort_keys=True),
+        "Write one useful plain-language sentence for a quant reviewer, not a bare citation. "
+        "Explain that the observation-year split is chronological but does not establish a "
+        "completed backtest because no external experiment record was supplied. Cite at least "
+        "one allowed source ID. Summary facts: " + json.dumps(summary_context, sort_keys=True),
         system="Use only cited records, distinguish chronology from a real experiment, and never promote or execute a strategy.",
         evidence_ids=evidence_ids,
         protected_canaries=BETA_IDS,
     )
-    if ai["ai_status"] == "AI / LOCAL":
-        ai["ai_status"] = "AI / LOCAL (APP-REPORTED; INDEPENDENT VERIFICATION REQUIRED)"
+    ai = _reject_non_substantive_summary(ai)
+    if ai["ai_status"] in {"AI / LOCAL", "AI / PROVIDER"}:
+        ai["ai_status"] += " (APP-REPORTED; INDEPENDENT VERIFICATION REQUIRED)"
     ai["ai_completion_verdict"] = "UNVERIFIED"
     ai["ai_summary"] = ai["ai_output"] or ai["ai_handoff"]
     return {

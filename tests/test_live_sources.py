@@ -7,6 +7,7 @@ production data or evidence that a provider endpoint is live.
 import hashlib
 import json
 import unittest
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 from unittest.mock import patch
@@ -19,6 +20,8 @@ from suite_core.live_sources import (
     UnverifiedSource,
     _HTTPResponse,
     _fetch_with_transport,
+    fetch_govinfo_opm_text,
+    govinfo_opm_url,
 )
 
 _TEST_NOW = "2026-09-23T12:00:00Z"
@@ -450,12 +453,163 @@ class LiveSourcesAdversarialTests(unittest.TestCase):
         self.assertEqual(record.source_id, "2026-19222")
         self.assertEqual(record.as_of, "2026-09-18")
         self.assertEqual(record.as_of_precision, "day")
+        self.assertEqual(
+            record.source_url,
+            "https://www.federalregister.gov/documents/2026/09/18/2026-19222",
+        )
         self.assertEqual(record.data["title"], "Employment in the Excepted Service")
+        self.assertEqual(record.data["html_url"], record.source_url)
         self.assertEqual(record.data["type"], "Proposed Rule")
         self.assertEqual(record.terms_url,
                          "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site")
         self.assertIn("agency_ids", result.request_url)
         self.assertIn("406", result.request_url)
+
+    def test_adversarial_federal_register_slug_is_discarded_after_identity_match(self):
+        slug = "avery-morgan-19-example-road"
+        document = dict(
+            _opm_document("2026-09-18"),
+            type="Proposed Rule",
+            html_url=(
+                "https://www.federalregister.gov/documents/2026/09/18/"
+                f"2026-19222/{slug}"
+            ),
+        )
+        result = _fetch(
+            Provider.FEDERAL_REGISTER_OPM,
+            AdversarialStubTransport(_reply({"results": [document]})),
+            TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+        )
+        record = result.records[0]
+        canonical = "https://www.federalregister.gov/documents/2026/09/18/2026-19222"
+        self.assertEqual(record.source_url, canonical)
+        self.assertEqual(record.data["html_url"], canonical)
+        self.assertNotIn(slug, repr(record))
+        self.assertEqual(record.source_id, "2026-19222")
+        self.assertEqual(record.data["document_number"], "2026-19222")
+        self.assertEqual(record.as_of, "2026-09-18")
+        self.assertEqual(record.data["publication_date"], "2026-09-18")
+        self.assertEqual(record.response_sha256, result.response_sha256)
+        self.assertEqual(record.terms_url,
+                         "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site")
+
+    def test_adversarial_federal_register_rejects_nonofficial_host_userinfo_query_and_fragment(self):
+        base = "https://www.federalregister.gov/documents/2026/09/18/2026-19222"
+        bad_urls = (
+            "https://evil.invalid/documents/2026/09/18/2026-19222",
+            "https://avery@www.federalregister.gov/documents/2026/09/18/2026-19222",
+            f"{base}?person=avery-morgan-19-example-road",
+            f"{base}#avery-morgan-19-example-road",
+        )
+        for url in bad_urls:
+            with self.subTest(url=url), self.assertRaises(DataUnavailable):
+                _fetch(
+                    Provider.FEDERAL_REGISTER_OPM,
+                    AdversarialStubTransport(_reply({"results": [dict(
+                        _opm_document("2026-09-18"), type="Proposed Rule", html_url=url,
+                    )]})),
+                    TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+                )
+
+    def test_adversarial_govinfo_text_is_directly_bound_to_opm_number_and_date(self):
+        metadata = _fetch(
+            Provider.FEDERAL_REGISTER_OPM,
+            AdversarialStubTransport(_reply({"results": [dict(
+                _opm_document("2026-09-18"), type="Proposed Rule",
+            )]})),
+            TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+        ).records[0]
+        html = (
+            b"<html><body><pre>FR Doc No: 2026-19222\n\n"
+            b"September 18, 2026\n\nEmployment in the Excepted Service\n\n"
+            b"DATES: Comments must be received by November 17, 2026.\n\n"
+            b"ADDRESSES: Use the Federal eRulemaking Portal.\n\n"
+            b"Contact Jane Doe at jane@example.invalid for details.</pre></body></html>"
+        )
+        transport = AdversarialStubTransport(_HTTPResponse(
+            200, {"Content-Type": "text/html; charset=utf-8"}, html,
+        ))
+        with patch("suite_core.live_sources._UrllibTransport", return_value=transport):
+            text = fetch_govinfo_opm_text(metadata)
+        self.assertEqual(
+            govinfo_opm_url(metadata),
+            "https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+        )
+        self.assertEqual(transport.calls[0][0], govinfo_opm_url(metadata))
+        self.assertEqual(len(transport.calls), 1)
+        self.assertEqual(text.source_id, metadata.source_id)
+        self.assertEqual(text.as_of, metadata.as_of)
+        self.assertEqual(text.as_of_precision, "day")
+        self.assertEqual(text.task_fit, "public_opm_policy_text")
+        self.assertEqual(text.data["sections"]["DATES"], ["Comments must be received by November 17, 2026."])
+        self.assertEqual(text.data["sections"]["ADDRESSES"], ["Use the Federal eRulemaking Portal."])
+        self.assertNotIn("Jane Doe", repr(text.data))
+        self.assertNotIn("jane@example.invalid", repr(text.data))
+        self.assertEqual(text.terms_url, "https://www.govinfo.gov/about/policies#copyright")
+        self.assertEqual(text.data["metadata_source_url"], metadata.source_url)
+        self.assertEqual(text.data["metadata_response_sha256"], metadata.response_sha256)
+
+    def test_adversarial_govinfo_redirect_is_refused_without_second_request(self):
+        metadata = _fetch(
+            Provider.FEDERAL_REGISTER_OPM,
+            AdversarialStubTransport(_reply({"results": [dict(
+                _opm_document("2026-09-18"), type="Proposed Rule",
+            )]})),
+            TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+        ).records[0]
+        transport = AdversarialStubTransport(_HTTPResponse(
+            302,
+            {"Content-Type": "text/html", "Location": "https://unblock.federalregister.gov/"},
+            b"",
+        ))
+        with patch("suite_core.live_sources._UrllibTransport", return_value=transport):
+            with self.assertRaisesRegex(DataUnavailable, "HTTP 302"):
+                fetch_govinfo_opm_text(metadata)
+        self.assertEqual(len(transport.calls), 1)
+        self.assertIn("govinfo.gov/content/pkg/FR-", transport.calls[0][0])
+
+    def test_adversarial_govinfo_issue_date_mismatch_returns_no_text(self):
+        metadata = _fetch(
+            Provider.FEDERAL_REGISTER_OPM,
+            AdversarialStubTransport(_reply({"results": [dict(
+                _opm_document("2026-09-18"), type="Proposed Rule",
+            )]})),
+            TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+        ).records[0]
+        body = (
+            b"<html><body><p>FR Doc No: 2026-19222</p>"
+            b"<p>September 19, 2026</p><p>Employment in the Excepted Service</p>"
+            b"<p>DATES: A sample date.</p></body></html>"
+        )
+        transport = AdversarialStubTransport(_HTTPResponse(
+            200, {"Content-Type": "text/html"}, body,
+        ))
+        with patch("suite_core.live_sources._UrllibTransport", return_value=transport):
+            with self.assertRaisesRegex(DataUnavailable, "document number, title, or issue date"):
+                fetch_govinfo_opm_text(metadata)
+        self.assertEqual(len(transport.calls), 1)
+
+    def test_adversarial_govinfo_metadata_url_must_remain_exact_official_identity(self):
+        metadata = _fetch(
+            Provider.FEDERAL_REGISTER_OPM,
+            AdversarialStubTransport(_reply({"results": [dict(
+                _opm_document("2026-09-18"), type="Proposed Rule",
+            )]})),
+            TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+        ).records[0]
+        for url in (
+            "https://evil.invalid/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+            metadata.source_url + "?redirect=1",
+        ):
+            transport = AdversarialStubTransport(_HTTPResponse(
+                200, {"Content-Type": "text/html"}, b"",
+            ))
+            with self.subTest(url=url), patch(
+                "suite_core.live_sources._UrllibTransport", return_value=transport,
+            ):
+                with self.assertRaises(UnverifiedSource):
+                    fetch_govinfo_opm_text(replace(metadata, source_url=url))
+                self.assertEqual(transport.calls, [])
 
     def test_adversarial_opm_freshness_boundary_and_stale_http_200(self):
         for publication_date, expected_status in (

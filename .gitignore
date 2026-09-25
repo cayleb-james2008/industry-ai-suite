@@ -17,6 +17,7 @@ htmlcov/
 # Local run output and temporary files; fixture/source receipt data stays visible.
 /run-output/
 /runtime/
+/private-runtime/
 /runtime-receipts/
 /local-receipts/
 /.tmp/

@@ -13,6 +13,7 @@ from suite_core import (
     ModelResult,
     ModelUnavailable,
     NonAIFallback,
+    OpenAICompatibleClient,
     PromptInjectionError,
     PromptSentinel,
     UnsafeModelOutput,
@@ -45,33 +46,45 @@ def complete_grounded(
 ) -> dict[str, object]:
     """Return a real, cited completion or an explicit deterministic handoff.
 
-    Hashes cover canonical redacted request fields and the redacted response; the
-    response itself is included only when it came from a real client result.
+    The app result is always app-reported. Provider transport hashes bind the
+    request bytes and raw response bytes; response text is redacted before it is
+    included in this receipt.
     """
     evidence = tuple(evidence_ids)
     fallback = NonAIFallback().result(reason="no local model client was supplied", evidence_ids=evidence)
     if ai_client is None:
         return {
             "ai_status": fallback.status,
+            "ai_availability": "AI: unavailable (UNVERIFIED)",
             "ai_invoked": False,
             "ai_output": None,
             "ai_failure": None,
             "ai_handoff": fallback.text,
             "ai_evidence": None,
         }
-    if type(ai_client) is not LocalOpenAIClient:
-        raise TypeError("ai_client must be a real suite_core.LocalOpenAIClient instance")
+    if type(ai_client) not in (LocalOpenAIClient, OpenAICompatibleClient):
+        raise TypeError("ai_client must be a suite_core OpenAI-compatible client")
 
-    prompt = build_grounded_prompt(prompt, evidence)
-    system = f"{system.rstrip()} Final only, no reasoning."
+    prompt = str(redact(build_grounded_prompt(prompt, evidence)))
+    system = str(redact(f"{system.rstrip()} Final only, no reasoning."))
     completion: ModelResult | None = None
     proof: dict[str, object] | None = None
     invoked = False
     try:
         PromptSentinel().check(prompt, protected_canaries=protected_canaries)
-        completion = ai_client.complete(
-            prompt, system=system, timeout=MODEL_TIMEOUT_SECONDS, max_tokens=MODEL_MAX_TOKENS,
-        )
+        if type(ai_client) is OpenAICompatibleClient:
+            completion = ai_client.complete(
+                prompt, system=system, timeout=MODEL_TIMEOUT_SECONDS, max_tokens=MODEL_MAX_TOKENS,
+                trace_context={
+                    "task": "produce a cited response from the supplied evidence",
+                    "evidence_ids": list(evidence),
+                    "human_handoff": "human review required; no automatic side effect",
+                },
+            )
+        else:
+            completion = ai_client.complete(
+                prompt, system=system, timeout=MODEL_TIMEOUT_SECONDS, max_tokens=MODEL_MAX_TOKENS,
+            )
         invoked = type(completion) is ModelResult
         if not invoked:
             raise UnsafeModelOutput("local model result refused")
@@ -98,6 +111,7 @@ def complete_grounded(
             separators=(",", ":"),
         ).encode("utf-8")
         proof = {
+            "trace_provenance": "app-reported",
             "route": completion.route,
             "model": completion.model,
             "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
@@ -106,8 +120,18 @@ def complete_grounded(
             "evidence_ids": list(citations),
             "grounded": False,
         }
-        if completion.status != "AI / LOCAL" or not completion.route or not completion.model:
-            raise UnsafeModelOutput("local model result identity refused")
+        if completion.provider_id is not None:
+            proof.update({
+                "provider_id": completion.provider_id,
+                "provider_host": completion.provider_host,
+                "created": completion.created,
+                "usage": redact(completion.usage),
+                "provider_request_sha256": completion.request_sha256,
+                "provider_response_sha256": completion.response_sha256,
+            })
+        if (completion.status not in {"AI / LOCAL", "AI / PROVIDER"}
+                or not completion.route or not completion.model):
+            raise UnsafeModelOutput("provider completion identity refused")
         grounded = GroundedOutputValidator().validate(
             response_text,
             cited_evidence=citations,
@@ -121,18 +145,21 @@ def complete_grounded(
             grounded=True,
         )
         return {
-            "ai_status": "AI / LOCAL",
+            "ai_status": completion.status,
+            "ai_availability": "configured; provider completion returned",
             "ai_invoked": True,
             "ai_output": grounded.text,
             "ai_failure": None,
             "ai_handoff": None,
             "ai_evidence": proof,
+            "ai_evidence_provenance": "app-reported",
         }
     except (ModelUnavailable, PromptInjectionError, UnsafeModelOutput, ValueError) as exc:
         reason = f"local completion unavailable or rejected ({type(exc).__name__})"
         fallback = NonAIFallback().result(reason=reason, evidence_ids=evidence)
         return {
             "ai_status": fallback.status,
+            "ai_availability": "AI: unavailable (UNVERIFIED)",
             "ai_invoked": invoked,
             "ai_output": None,
             "ai_failure": reason,
@@ -141,4 +168,5 @@ def complete_grounded(
                 f"review approved evidence manually: {', '.join(evidence) if evidence else 'none supplied'}."
             )),
             "ai_evidence": proof,
+            "ai_evidence_provenance": "app-reported" if proof is not None else None,
         }

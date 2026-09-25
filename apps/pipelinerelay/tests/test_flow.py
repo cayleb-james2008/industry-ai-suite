@@ -75,14 +75,9 @@ class PipelineRelayTests(unittest.TestCase):
     def test_adversarial_synthetic_public_repo_metadata_is_not_crm_or_a_lead(self):
         """Synthetic repository metadata here is an adversarial regression fixture only."""
         source = _adversarial_github_source()
-        fake_ai_result = {
-            "ai_status": "AI / LOCAL", "ai_invoked": True,
-            "ai_output": "Verify the public repository [evidence:github-repo-12277502]",
-            "ai_failure": None, "ai_handoff": None, "ai_evidence": {"grounded": True},
-        }
         with (
             patch("apps.pipelinerelay.flow.fetch_live", return_value=source),
-            patch("apps.pipelinerelay.flow.complete_grounded", return_value=fake_ai_result) as complete,
+            patch("apps.pipelinerelay.flow.complete_grounded", side_effect=AssertionError("metadata slice has no honest AI role")) as complete,
         ):
             result = run_live(ai_client=object())
 
@@ -90,10 +85,14 @@ class PipelineRelayTests(unittest.TestCase):
         self.assertIn("UNVERIFIED", result["workflow_status"])
         self.assertEqual(result["task_result"]["metadata"]["full_name"], "pytest-dev/pytest")
         self.assertEqual(result["task_result"]["metadata"]["license_spdx_id"], "MIT")
-        self.assertEqual(complete.call_args.kwargs["evidence_ids"], ("github-repo-12277502",))
-        self.assertIn("pytest-dev/pytest", complete.call_args.args[1])
-        self.assertNotIn("issue", complete.call_args.args[1].lower())
-        self.assertTrue(result["ai_verification_status"].startswith("UNVERIFIED"))
+        checks = result["task_result"]["review_checks"]
+        self.assertEqual([check["status"] for check in checks], ["PASS", "PASS", "OBSERVED", "UNVERIFIED"])
+        self.assertEqual(checks[2]["days"], 1)
+        self.assertEqual(checks[2]["evidence_ids"], ["github-repo-12277502"])
+        self.assertFalse(complete.called)
+        self.assertEqual(result["ai_status"], "NON-AI / DETERMINISTIC FALLBACK")
+        self.assertEqual(result["ai_verification_status"], "NON-AI — public repository metadata only; no honest AI role")
+        self.assertFalse(result["ai_invoked"])
         self.assertEqual(result["side_effect_count"], 0)
         self.assertEqual(result["evidence"][0]["source_id"], "12277502")
         exposed = json.dumps(result, sort_keys=True).lower()

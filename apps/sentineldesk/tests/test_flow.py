@@ -39,6 +39,7 @@ from apps.sentineldesk.flow import (
     run_demo,
     run_live,
 )
+from apps.sentineldesk.__main__ import main as sentinel_cli_main
 
 
 def _adversarial_cisa_source(rows: list[dict[str, object]]) -> SourceResult:
@@ -120,10 +121,9 @@ class SentinelDeskFlowTests(unittest.TestCase):
         self.assertEqual(receipt["result"]["product_groups"][0]["record_count"], 2)
         self.assertTrue(receipt["result"]["product_groups"][0]["product_id"].startswith("product-"))
         self.assertTrue(receipt["result"]["product_groups"][0]["vendor_project_id"].startswith("vendor-"))
-        self.assertEqual(complete.call_args.kwargs["evidence_ids"], (
-            "CVE-2024-2222", "CVE-2024-1111", "CVE-2024-3333",
-        ))
-        self.assertTrue(receipt["ai_verification_status"].startswith("UNVERIFIED"))
+        self.assertEqual(complete.call_args.kwargs["evidence_ids"], ("CVE-2024-2222",))
+        self.assertEqual(receipt["ai_verification_status"], "AI CANDIDATE (unwitnessed)")
+        self.assertEqual(receipt["ai_review_source_id"], "CVE-2024-2222")
         self.assertEqual(receipt["side_effect_count"], 0)
         self.assertEqual(receipt["evidence"][0]["as_of"], "2024-01-02")
         exposed = json.dumps(receipt, sort_keys=True)
@@ -139,6 +139,69 @@ class SentinelDeskFlowTests(unittest.TestCase):
         self.assertNotIn('"severity":', exposed)
         self.assertNotIn('"asset_id"', exposed)
         self.assertNotIn('"alert_count"', exposed)
+
+    def test_prior_grounded_cve_is_selected_when_present_in_current_cisa_records(self) -> None:
+        source = _adversarial_cisa_source([{
+            "cveID": "CVE-2026-93952", "dateAdded": "2026-09-22",
+            "dueDate": "2026-10-22", "vendorProject": "Arista",
+            "product": "VeloCloud Orchestrator",
+            "shortDescription": "Arista VeloCloud Orchestrator has an input-validation vulnerability.",
+        }])
+        fake_ai_result = {
+            "ai_output": "Review the cited public vulnerability before assessing assets [evidence:CVE-2026-93952]",
+            "ai_status": "AI / PROVIDER", "ai_invoked": True,
+            "ai_evidence": {"grounded": True}, "ai_handoff": None,
+        }
+        with patch("apps.sentineldesk.flow.fetch_live", return_value=source), patch(
+            "apps.sentineldesk.flow.complete_grounded", return_value=fake_ai_result,
+        ) as complete:
+            receipt = run_live(ai_client=object())
+        prompt = complete.call_args.args[1]
+        self.assertEqual(complete.call_args.kwargs["evidence_ids"], ("CVE-2026-93952",))
+        self.assertIn("input-validation vulnerability", prompt)
+        self.assertEqual(receipt["ai_review_source_id"], "CVE-2026-93952")
+        self.assertEqual(receipt["ai_verification_status"], "AI CANDIDATE (unwitnessed)")
+        self.assertEqual(receipt["evidence"][0]["source_id"], "CVE-2026-93952")
+        self.assertIn("no authorized organizational alert or asset source", receipt["workflow_status"])
+        self.assertEqual(receipt["side_effect_count"], 0)
+
+    def test_rejected_provider_output_is_reported_as_rejected(self) -> None:
+        source = _adversarial_cisa_source([{
+            "cveID": "CVE-2026-93952", "dateAdded": "2026-09-22",
+            "dueDate": "2026-10-22", "shortDescription": "Public vulnerability context.",
+        }])
+        rejected = {
+            "ai_output": None, "ai_status": "NON-AI / DETERMINISTIC FALLBACK",
+            "ai_invoked": True, "ai_evidence": None, "ai_handoff": "Review manually.",
+            "ai_failure": "local completion unavailable or rejected (UnsafeModelOutput)",
+        }
+        with patch("apps.sentineldesk.flow.fetch_live", return_value=source), patch(
+            "apps.sentineldesk.flow.complete_grounded", return_value=rejected,
+        ):
+            receipt = run_live(ai_client=object())
+        self.assertIn("REJECTED", receipt["ai_verification_status"])
+        self.assertIn("UnsafeModelOutput", receipt["ai_failure"])
+        self.assertEqual(receipt["result"]["human_review_summary"], "Review manually.")
+        self.assertNotIn("ai_output", receipt)
+        self.assertEqual(receipt["side_effect_count"], 0)
+
+    def test_cli_uses_only_loopback_witness_proxy_and_fixed_local_model(self) -> None:
+        with tempfile.TemporaryDirectory() as runtime:
+            trace_path = Path(runtime) / "ai-app-trace.jsonl"
+            proxy_url = "http://127.0.0.1:39081/v1"
+            with patch.dict("os.environ", {"SUITE_AI_TRACE_PATH": str(trace_path)}), patch(
+                "apps.sentineldesk.__main__.OpenAICompatibleClient", return_value=object(),
+            ) as client_factory, patch(
+                "apps.sentineldesk.__main__.run_live", return_value={"status": "VERIFIED_SOURCE"},
+            ), patch("builtins.print"):
+                self.assertEqual(sentinel_cli_main(["--ai-url", proxy_url]), 0)
+            kwargs = client_factory.call_args.kwargs
+            self.assertEqual(kwargs["model"], "industry-suite-local")
+            self.assertEqual(kwargs["allowed_hosts"], ("127.0.0.1",))
+            self.assertEqual(kwargs["trace_path"], trace_path)
+            self.assertEqual(client_factory.call_args.args[0], proxy_url)
+        with self.assertRaises(ValueError):
+            sentinel_cli_main(["--ai-url", "http://127.0.0.1:18180/v1"])
 
     def test_adversarial_live_unavailable_never_uses_synthetic_alert_fixtures(self) -> None:
         with patch("apps.sentineldesk.flow.fetch_live", side_effect=DataUnavailable("HTTP 429")):

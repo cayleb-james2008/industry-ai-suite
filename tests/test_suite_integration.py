@@ -6,6 +6,7 @@ import hashlib
 import importlib
 import io
 import json
+import os
 import tempfile
 import time
 import unittest
@@ -35,13 +36,21 @@ def _fabricated_local_receipt() -> dict[str, object]:
     """ADVERSARIAL REGRESSION ONLY: deliberately fabricated self-asserted AI data."""
     response = "A fabricated local claim [evidence:E-1]."
     return {
-        "ai_status": "AI / LOCAL",
+        "ai_status": "AI / PROVIDER",
+        "ai_verification_status": "AI VERIFIED",
         "ai_invoked": True,
         "ai_evidence": {
+            "trace_provenance": "app-reported",
             "route": "http://127.0.0.1:52652/v1",
             "model": "invented-model",
             "request_sha256": "a" * 64,
             "response_sha256": hashlib.sha256(response.encode()).hexdigest(),
+            "provider_id": "forged-provider-id",
+            "provider_host": "127.0.0.1",
+            "provider_request_sha256": "c" * 64,
+            "provider_response_sha256": "d" * 64,
+            "created": 1_790_000_000,
+            "usage": {"total_tokens": 3},
             "response": response,
             "evidence_ids": ["E-1"],
             "grounded": True,
@@ -118,11 +127,10 @@ class SuiteIntegrationTests(unittest.TestCase):
             proof = fabricated["ai_evidence"]
             copied_observation = {
                 key: proof[key]
-                for key in ("route", "model", "request_sha256", "response_sha256")
+                for key in ("provider_id", "provider_host", "provider_request_sha256",
+                            "provider_response_sha256", "created", "usage")
             }
-            observation_path.write_text(
-                json.dumps({slug: copied_observation for slug in APP_SLUGS}), encoding="utf-8",
-            )
+            observation_path.write_text(json.dumps(copied_observation), encoding="utf-8")
 
             # The unsupported sidecar option fails before any receipt is written.
             with redirect_stderr(io.StringIO()):
@@ -138,21 +146,26 @@ class SuiteIntegrationTests(unittest.TestCase):
                 run_live=lambda ai_client=None: fabricated,
                 run_demo=lambda ai_client=None: self.fail("production runner called run_demo"),
             )
-            with patch("scripts.run_all.importlib.import_module", return_value=fake_flow):
+            with (
+                patch("scripts.run_all.importlib.import_module", return_value=fake_flow),
+                patch.dict(os.environ, {"SUITE_AI_TRACE_PATH": str(observation_path)}),
+            ):
                 with redirect_stdout(io.StringIO()) as output:
                     exit_code, _, receipts = run_suite(output_path)
 
             self.assertEqual(exit_code, 1)
             self.assertEqual(len(receipts), 10)
             self.assertTrue(all(receipt["status"] == "UNVERIFIED" for receipt in receipts))
-            self.assertTrue(all(receipt["ai_status"] == "AI / LOCAL" for receipt in receipts))
-            self.assertTrue(all(receipt["ai_verification_status"] == "AI CANDIDATE" for receipt in receipts))
+            self.assertTrue(all(receipt["ai_status"] == "AI / PROVIDER" for receipt in receipts))
+            self.assertTrue(all(receipt["ai_verification_status"] == "AI CANDIDATE (unwitnessed)" for receipt in receipts))
             self.assertTrue(all(receipt["ai_evidence"]["lead_observation"] is True for receipt in receipts))
+            self.assertTrue(all(receipt["ai_evidence_provenance"] == "app-reported" for receipt in receipts))
+            self.assertTrue(all(receipt["app_reported_ai_verification_claim_ignored"] for receipt in receipts))
             saved = [json.loads(path.read_text(encoding="utf-8")) for path in output_path.glob("*.json")]
             self.assertEqual(len(saved), 10)
             self.assertTrue(all(receipt["status"] == "UNVERIFIED" for receipt in saved))
-            self.assertTrue(all(receipt["ai_status"] == "AI / LOCAL" for receipt in saved))
-            self.assertTrue(all(receipt["ai_verification_status"] == "AI CANDIDATE" for receipt in saved))
+            self.assertTrue(all(receipt["ai_status"] == "AI / PROVIDER" for receipt in saved))
+            self.assertTrue(all(receipt["ai_verification_status"] == "AI CANDIDATE (unwitnessed)" for receipt in saved))
             self.assertNotIn("VERIFIED AI", output.getvalue())
             self.assertFalse(any(line.startswith("COMPLETE:") for line in output.getvalue().splitlines()))
 
@@ -174,8 +187,8 @@ class SuiteIntegrationTests(unittest.TestCase):
         self.assertEqual(exit_code, 1)
         self.assertEqual(len(receipts), 10)
         self.assertTrue(all(receipt["status"] == "UNVERIFIED" for receipt in receipts))
-        self.assertTrue(all(receipt["ai_verification_status"] == "AI CANDIDATE" for receipt in receipts))
-        self.assertTrue(all("cannot verify model execution" in receipt["ai_verification_basis"] for receipt in receipts))
+        self.assertTrue(all(receipt["ai_verification_status"] == "AI CANDIDATE (unwitnessed)" for receipt in receipts))
+        self.assertTrue(all("separate witness verifier" in receipt["ai_verification_basis"] for receipt in receipts))
 
     def test_default_runner_calls_only_run_live_and_keeps_ten_receipts_incomplete(self) -> None:
         """No-argument CLI dispatch uses only live flows, never demos or fixture fallback."""
@@ -239,7 +252,7 @@ class SuiteIntegrationTests(unittest.TestCase):
                     self.assertEqual(receipt["source_status"], "VERIFIED_SOURCE")
                     self.assertEqual(receipt["status"], "UNVERIFIED")
                     self.assertEqual(receipt["workflow_status"], "UNVERIFIED")
-                    self.assertEqual(receipt["ai_verification_status"], "AI CANDIDATE")
+                    self.assertEqual(receipt["ai_verification_status"], "AI CANDIDATE (unwitnessed)")
                     self.assertEqual(receipt["source"]["source_id"], f"record-{receipt['app_slug']}")
                     self.assertEqual(receipt["side_effect_count"], 0)
                     self.assertEqual(receipt["result"], {"decision": "review public record"})

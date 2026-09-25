@@ -226,16 +226,31 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
             "citations": [f"[evidence:{ordered[-2][0].source_id}]", f"[evidence:{ordered[-1][0].source_id}]"],
         },
     }
-    evidence_ids = tuple(record.source_id for record, _ in ordered)
+    ai_evidence = [
+        {"year": int(record.as_of), "source_id": record.source_id, "gdp_current_usd": format(value, "f")}
+        for record, value in ordered[-2:]
+    ]
+    ai_evidence_ids = tuple(item["source_id"] for item in ai_evidence)
+    ai_brief = {
+        "indicator": brief["indicator"],
+        "recent_observations": ai_evidence,
+        "latest_nominal_change": {
+            "from_year": prior_year,
+            "to_year": latest_year,
+            "change_percent": format(growth_percent, "f"),
+            "source_ids": list(ai_evidence_ids),
+        },
+    }
     ai = complete_grounded(
         ai_client,
-        "Draft a short public macro context note using only these cited World Bank GDP records. State nominal-dollar limits, and do not infer stock prices or a trading edge. Data: " + json.dumps(brief, sort_keys=True),
-        system="Use only the cited GDP observations; state uncertainty and do not recommend a trade.",
-        evidence_ids=evidence_ids,
+        "Write one short sentence for a macro analyst about the latest nominal U.S. GDP change; cite both supplied years as [evidence:ID]. State it is public macro context, not a security return. Do not invent a next step or recommend a trade. Data: "
+        + json.dumps(ai_brief, sort_keys=True, separators=(",", ":")),
+        system="Use only the two cited GDP observations; state uncertainty and do not recommend a trade.",
+        evidence_ids=ai_evidence_ids,
         protected_canaries=BETA_IDS,
     )
-    if ai["ai_status"] == "AI / LOCAL":
-        ai["ai_status"] = "AI / LOCAL (APP-REPORTED; INDEPENDENT VERIFICATION REQUIRED)"
+    if ai["ai_status"] in {"AI / LOCAL", "AI / PROVIDER"}:
+        ai["ai_status"] = "AI CANDIDATE (unwitnessed)"
     ai["ai_completion_verdict"] = "UNVERIFIED"
     ai["ai_summary"] = ai["ai_output"] or ai["ai_handoff"]
     return {
@@ -245,7 +260,7 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
         "source_metadata": project_source_metadata(
             asdict(source), record_data_fields=("countryiso3code", "date", "value"),
         ),
-        "source_ids": list(evidence_ids),
+        "source_ids": [record.source_id for record, _ in ordered],
         "task_result": brief,
         "job_verdict": "UNVERIFIED",
         "uncertainty": "This 15-year nominal GDP series is broad U.S. macro context only. It is not inflation-adjusted, does not include company evidence or security prices, and the source as-of year does not establish publication availability. The World Bank license page is cited; a dataset-specific license override was not independently checked here.",

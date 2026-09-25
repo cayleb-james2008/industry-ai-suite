@@ -14,8 +14,10 @@ from suite_core import (
     AccessDenied, AccessPolicy, Authenticator, AuditLog, DataUnavailable,
     FixtureAdapter, FixtureSchema, HMACTokenCodec, LiveSourceError,
     LocalOpenAIClient, Principal, PromptSentinel, Provider, SecurityCore,
-    SourceRecord, TaskFit, fetch_live, redact,
+    SourceRecord, SourceResult, TaskFit, fetch_live, redact,
 )
+from suite_core.live_sources import fetch_govinfo_opm_text, govinfo_opm_url
+from suite_core.sources.federal_register import canonical_document_url
 
 PROJECT = "HandoffHub"
 ACTION = "answer_handoff_question"
@@ -135,14 +137,14 @@ def _public_document(record: SourceRecord) -> dict[str, object]:
             or not isinstance(record.terms_url, str) or not record.terms_url
             or not isinstance(record.retrieved_at_utc, str)
             or not isinstance(document_number, str) or not isinstance(publication_date, str)
-            or not isinstance(record.source_url, str)
-            or not record.source_url.startswith("https://www.federalregister.gov/documents/")):
+            or not isinstance(record.source_url, str)):
         raise DataUnavailable("Federal Register OPM metadata failed application validation")
+    canonical_url = canonical_document_url(record.source_url, document_number, publication_date)
     document = {
         "document_number": document_number,
         "publication_date": publication_date,
         "source_id": record.source_id,
-        "source_url": record.source_url,
+        "source_url": canonical_url,
         "as_of": record.as_of,
         "as_of_precision": record.as_of_precision,
         "retrieved_at_utc": record.retrieved_at_utc,
@@ -177,8 +179,59 @@ def _live_status(
     }
 
 
+def _live_scope_check(document_id: str) -> dict[str, object]:
+    with TemporaryDirectory(prefix="handoffhub-live-") as temp:
+        audit = AuditLog(Path(temp) / "audit.jsonl")
+        auth = Authenticator(HMACTokenCodec(secrets.token_bytes(32)))
+        policy = AccessPolicy({"public-document": {ROLE: {document_id}}}, {ROLE: {ACTION}})
+        core = SecurityCore(auth, policy, audit)
+        actor = Principal("public-document", "public-document-reader", ROLE)
+        token = auth.issue(actor, expires_at=int(time.time()) + 60)
+        core.authorize(token, tenant_id=actor.tenant_id, action=ACTION, evidence_ids=(document_id,))
+        try:
+            core.authorize(token, tenant_id=actor.tenant_id, action=ACTION, evidence_ids=(FORBIDDEN_DOC,))
+            denied = {"status": "UNEXPECTEDLY_ALLOWED", "content_disclosed": True}
+        except AccessDenied:
+            denied = {"status": "DENIED", "content_disclosed": False}
+        denied["audit_event_count"] = len(audit.records())
+        return denied
+
+
+def _metadata_discovery(
+    source: SourceResult, missing: list[str], text_status: str, reason: str,
+    forbidden: dict[str, object], text_request_url: str | None = None,
+) -> dict[str, object]:
+    documents = [_public_document(record) for record in source.records]
+    return {
+        "project": PROJECT, "status": source.status, "source_status": source.status,
+        "workflow_status": "UNVERIFIED — public metadata only; public text and internal knowledge/owners are unavailable",
+        "policy_text_status": text_status, "provider": source.provider,
+        "policy_text_request_url": text_request_url,
+        "request_url": source.request_url,
+        "task_result": {
+            "status": "PUBLIC OPM METADATA DISCOVERY ONLY", "documents": documents, "answer": None,
+            "limitation": "Metadata is not policy text, internal knowledge, or proof of workplace permissions.",
+        },
+        "evidence": documents, "missing_sources": missing + ["verified, identity-matched official GovInfo OPM text"],
+        "uncertainty": [reason, "Public metadata does not establish an internal owner, permission, or employer policy."],
+        "risk": ["No employee access, internal policy, or private permission is inferred from metadata."],
+        "handoff": {
+            "owner": "unassigned public-policy reviewer (role placeholder; no internal owner evidence)",
+            "next_action": "A human reviewer should inspect the public document directly; connect authorized internal records before a workplace handoff.",
+        },
+        "ai_status": "NOT REQUESTED", "ai_invoked": False,
+        "ai_output": None, "ai_evidence": None, "ai_completion_claim": False,
+        "negative_checks": {"forbidden_internal_document": forbidden}, "side_effect_count": 0,
+        "integration_adapter": {
+            "type": "suite_core.fetch_live + fetch_govinfo_opm_text",
+            "provider": source.provider, "mode": "metadata discovery only; text failed closed",
+            "read_only": True, "external_write_capability": False,
+        },
+    }
+
+
 def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
-    """Discover public OPM documents; internal knowledge and permissions stay unverified."""
+    """Handoff one admitted public OPM rule excerpt; internal access stays unverified."""
     if ai_client is not None and type(ai_client) is not LocalOpenAIClient:
         raise TypeError("ai_client must be a real LocalOpenAIClient instance")
     missing = [
@@ -201,51 +254,106 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
             "UNVERIFIED", source.reason or "The public source did not establish usable OPM metadata.",
             missing, source.request_url,
         )
-    try:
-        if (source.provider != Provider.FEDERAL_REGISTER_OPM.value
-                or source.task_fit != TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS.value
-                or source.read_only is not True or source.response_status != 200
-                or len(source.response_sha256) != 64):
-            raise DataUnavailable("Federal Register OPM response failed application validation")
-        documents = [_public_document(record) for record in source.records]
-    except DataUnavailable:
+    if (source.provider != Provider.FEDERAL_REGISTER_OPM.value
+            or source.task_fit != TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS.value
+            or source.read_only is not True or source.response_status != 200
+            or len(source.response_sha256) != 64):
         return _live_status(
-            "DATA_UNAVAILABLE",
-            "The live OPM metadata failed application schema/provenance checks; no fixture fallback was used.",
+            "DATA_UNAVAILABLE", "The live OPM metadata failed application provenance checks.",
             missing, source.request_url,
         )
-    ai: dict[str, object] = {"ai_status": "NOT REQUESTED", "ai_invoked": False, "ai_output": None, "ai_evidence": None}
-    if ai_client is not None:
-        citations = tuple(document["source_id"] for document in documents)
-        metadata = "\n".join(
-            f"{document.get('document_type', 'Public document')} — {document['document_number']} — {document['publication_date']} [evidence:{document['source_id']}]"
-            for document in documents
+    candidate = next((record for record in source.records
+                      if record.data.get("type") in {"Rule", "Proposed Rule"}
+                      and isinstance(record.data.get("title"), str)), None)
+    if candidate is None:
+        return _metadata_discovery(
+            source, missing, "UNVERIFIED",
+            "The current OPM metadata did not include a safe Rule or Proposed Rule for public-text review.",
+            _live_scope_check(source.records[0].source_id),
         )
-        ai = complete_grounded(
-            ai_client,
-            "Summarize public document-discovery metadata only. Do not state or infer policy rules, permissions, eligibility, or staff ownership.\n" + metadata,
-            system="Summarize public document types and publication dates only; do not answer a policy question.",
-            evidence_ids=citations,
+    forbidden = _live_scope_check(candidate.source_id)
+    text_request_url = None
+    try:
+        text_request_url = govinfo_opm_url(candidate)
+        _public_document(candidate)
+        text_record = fetch_govinfo_opm_text(candidate)
+    except LiveSourceError as error:
+        return _metadata_discovery(
+            source, missing, error.status, str(error), forbidden, text_request_url,
         )
+    if forbidden["status"] != "DENIED":
+        return _live_status(
+            "UNVERIFIED", "The paired forbidden-document request was not denied.", missing, source.request_url,
+        )
+    document = _public_document(candidate)
+    sections = text_record.data.get("sections")
+    if not isinstance(sections, dict):
+        return _metadata_discovery(
+            source, missing, "UNVERIFIED",
+            "The GovInfo text did not include safe, stable section text for the handoff.",
+            forbidden, text_request_url,
+        )
+    summary = sections.get("SUMMARY") or sections.get("DATES") or sections.get("ADDRESSES")
+    if not isinstance(summary, list) or not summary:
+        return _metadata_discovery(
+            source, missing, "UNVERIFIED",
+            "The GovInfo text did not include a safe, stable section text for the handoff.",
+            forbidden, text_request_url,
+        )
+    excerpt = str(summary[0])
+    document.update({
+        "document_text": text_record.data["document_text"],
+        "text_excerpt": excerpt,
+        "text_excerpt_section": "SUMMARY" if sections.get("SUMMARY") else (
+            "DATES" if sections.get("DATES") else "ADDRESSES"
+        ),
+        "text_source_url": text_record.source_url,
+        "text_terms_url": text_record.terms_url,
+        "federal_register_terms_url": text_record.data["federal_register_terms_url"],
+        "text_sections": text_record.data["sections"],
+        "text_task_fit": text_record.task_fit,
+        "text_response_status": text_record.response_status,
+        "text_retrieved_at_utc": text_record.retrieved_at_utc,
+        "text_response_sha256": text_record.response_sha256,
+        "metadata_request_url": source.request_url,
+        "metadata_response_sha256": candidate.response_sha256,
+    })
+    answer = (
+        f"Public OPM {candidate.data['type'].lower()} {candidate.source_id} states: "
+        f"{excerpt} [evidence:{candidate.source_id}]"
+    )
     return {
         "project": PROJECT,
-        "status": "UNVERIFIED",
+        "status": "VERIFIED_SOURCE",
+        "policy_text_status": "VERIFIED_SOURCE",
+        "workflow_status": "UNVERIFIED — internal knowledge, workplace permissions, and real owner records are unavailable",
         "source_status": source.status,
         "provider": source.provider,
         "request_url": source.request_url,
+        "policy_text_request_url": text_request_url,
         "task_result": {
-            "status": "UNVERIFIED", "documents": documents, "answer": None,
-            "limitation": "OPM metadata supports public-document discovery only; it is not policy text or internal permission evidence.",
+            "status": "SUPPORTED PUBLIC-TEXT SLICE", "document_id": candidate.source_id,
+            "answer": answer, "citations": [candidate.source_id], "documents": [document],
+            "limitation": "Public OPM rule text is not internal knowledge, proof of workplace permission, or an approved employer policy.",
         },
-        "evidence": documents,
+        "evidence": [document],
         "missing_sources": missing,
-        "uncertainty": ["Public document metadata was retrieved, but no internal knowledge content or permission-scoped handoff records are available."],
-        "risk": ["No policy answer, employee access, private permission, or internal owner is inferred from metadata."],
-        "handoff": {"owner": "unassigned human knowledge owner", "next_action": "A human knowledge owner must connect permission-scoped internal records and review any public document directly."},
-        "ai_status": ai["ai_status"], "ai_invoked": ai["ai_invoked"],
-        "ai_output": ai["ai_output"], "ai_evidence": ai["ai_evidence"],
-        "ai_completion_claim": False, "side_effect_count": 0,
-        "integration_adapter": {"type": "suite_core.fetch_live", "provider": source.provider, "mode": "public OPM metadata discovery only", "read_only": True, "external_write_capability": False},
+        "uncertainty": ["Public OPM text was retrieved; no internal records or organizational permission evidence were queried."],
+        "risk": ["No employee access, internal policy, or private permission is inferred from a public document."],
+        "handoff": {
+            "owner": "unassigned public-policy reviewer (role placeholder; no internal owner evidence)",
+            "context": f"Review public Federal Register document {candidate.source_id} only.",
+            "next_action": "A human reviewer should verify the official edition and connect an authorized internal owner before any workplace handoff.",
+        },
+        "ai_status": "NON-AI / DETERMINISTIC PUBLIC-TEXT EXCERPT", "ai_invoked": False,
+        "ai_output": None, "ai_evidence": None, "ai_completion_claim": False,
+        "negative_checks": {"forbidden_internal_document": forbidden},
+        "side_effect_count": 0,
+        "integration_adapter": {
+            "type": "suite_core.fetch_live + fetch_govinfo_opm_text",
+            "provider": source.provider, "mode": "public OPM Rule/Proposed Rule text only",
+            "read_only": True, "external_write_capability": False,
+        },
     }
 
 

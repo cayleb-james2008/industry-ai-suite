@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from suite_core import LocalOpenAIClient
+    from suite_core import LocalOpenAIClient, OpenAICompatibleClient
 
 APP_SLUGS = (
     "ledgerbridge",
@@ -108,6 +108,7 @@ def _failure_receipt(slug: str, status: str, reason: str) -> dict[str, Any]:
             "next_action": "Resolve the named live-source or workflow blocker; no fixture, cache, or substitute was used.",
         },
         "ai_status": "UNVERIFIED",
+        "ai_availability": "AI: unavailable (UNVERIFIED)",
         "ai_verification_status": "UNVERIFIED",
         "ai_invoked": False,
         "ai_evidence": None,
@@ -159,12 +160,11 @@ def _run_one(
         receipt["app_slug"] = slug
         json.dumps(receipt, sort_keys=True)
         receipt.setdefault("ai_status", "UNVERIFIED")
-        reported_ai_verification = receipt.get("ai_verification_status")
-        if reported_ai_verification is not None:
-            receipt["app_reported_ai_verification_status"] = reported_ai_verification
+        if receipt.get("ai_verification_status") is not None:
+            receipt["app_reported_ai_verification_claim_ignored"] = True
         is_ai_candidate = (
             isinstance(receipt.get("ai_status"), str)
-            and receipt["ai_status"].startswith("AI / LOCAL")
+            and receipt["ai_status"].startswith("AI /")
         ) or (
             receipt.get("ai_invoked") is True
             or receipt.get("ai_evidence") is not None
@@ -179,10 +179,11 @@ def _run_one(
         receipt["workflow_reason"] = _workflow_reason(value)
         receipt["status"] = workflow_status
         if is_ai_candidate:
-            receipt["ai_verification_status"] = "AI CANDIDATE"
+            receipt["ai_evidence_provenance"] = "app-reported"
+            receipt["ai_verification_status"] = "AI CANDIDATE (unwitnessed)"
             receipt["ai_verification_basis"] = (
-                "App-reported AI fields are a candidate only. No independently authenticated raw-transport "
-                "observer exists, so this runner cannot verify model execution."
+                "The app-reported trace is not independent evidence. Give its call hashes and returned identity "
+                "to the separate witness verifier; this runner never labels a call VERIFIED."
             )
         elif is_fallback:
             receipt["ai_verification_status"] = "NON-AI / DETERMINISTIC FALLBACK"
@@ -192,8 +193,7 @@ def _run_one(
         else:
             receipt["ai_verification_status"] = "UNVERIFIED"
             receipt["ai_verification_basis"] = (
-                "No independently authenticated raw-transport observer exists; AI execution "
-                "remains unverified."
+                "No app-reported AI call exists; AI execution remains unverified."
             )
         return receipt
     except Exception as exc:
@@ -225,19 +225,50 @@ def _probe_model(ai_url: str | None) -> tuple[LocalOpenAIClient | None, dict[str
     }
 
 
+def _probe_configured_provider() -> tuple[OpenAICompatibleClient | None, dict[str, Any]]:
+    from suite_core import ModelUnavailable, configured_ai_client
+
+    try:
+        client = configured_ai_client()
+    except (ModelUnavailable, ValueError) as exc:
+        return None, {
+            "available": False,
+            "reason": str(exc),
+            "route": None,
+            "models": [],
+            "ai_status": "AI: unavailable (UNVERIFIED)",
+        }
+    status = client.probe(timeout=2)
+    return (client if status.available else None), {
+        "available": status.available,
+        "reason": status.reason,
+        "route": status.route,
+        "models": list(status.models),
+        "provider": client.provider,
+        "host": client.host,
+    }
+
+
 def run_suite(
     out_dir: Path | None = None,
     ai_url: str | None = None,
+    *,
+    ai_configured: bool = False,
 ) -> tuple[int, Path, list[dict[str, Any]]]:
+    if ai_url is not None and ai_configured:
+        raise ValueError("choose either --ai-url or --ai-configured, not both")
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
+
     if out_dir is None:
         destination = Path(tempfile.mkdtemp(prefix="industry-ai-suite-receipts-"))
     else:
         destination = out_dir.expanduser().resolve()
         destination.mkdir(parents=True, exist_ok=True)
 
-    client, route_probe = _probe_model(ai_url)
+    client, route_probe = (
+        _probe_configured_provider() if ai_configured else _probe_model(ai_url)
+    )
     receipts = [_run_one(slug, client) for slug in APP_SLUGS]
     for receipt in receipts:
         receipt["model_route_probe"] = route_probe
@@ -253,7 +284,11 @@ def run_suite(
         {"app_slug": receipt["app_slug"], "status": receipt.get("status", "UNVERIFIED")}
         for receipt in receipts
     ]
-    candidates = sum(receipt.get("ai_verification_status") == "AI CANDIDATE" for receipt in receipts)
+    candidates = sum(
+        isinstance(receipt.get("ai_verification_status"), str)
+        and receipt["ai_verification_status"].startswith("AI CANDIDATE")
+        for receipt in receipts
+    )
     summary = {
         "suite_status": "INCOMPLETE",
         "job_count": len(receipts),
@@ -278,9 +313,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run all ten live industry AI workflows without fixture fallback.")
     parser.add_argument("--out-dir", type=Path, help="caller-owned directory for exactly ten app receipts")
     parser.add_argument("--ai-url", help="optional literal-loopback OpenAI-compatible route to probe and use")
+    parser.add_argument("--ai-configured", action="store_true",
+                        help="use the environment-selected provider after exact-host and model checks")
     args = parser.parse_args(argv)
     try:
-        code, _, _ = run_suite(args.out_dir, args.ai_url)
+        code, _, _ = run_suite(args.out_dir, args.ai_url, ai_configured=args.ai_configured)
     except ValueError as exc:
         parser.error(str(exc))
     return code

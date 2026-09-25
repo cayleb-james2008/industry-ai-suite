@@ -1,7 +1,9 @@
 """Explicit human approval tokens and an in-memory sink with no external side effects."""
 
+import hashlib
+import threading
 import time
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from dataclasses import dataclass
 
 from .audit import AuditLog
@@ -22,10 +24,14 @@ class ApprovalAuthority:
         approver_roles: Collection[str] = ("approver",),
         *,
         security_core: SecurityCore | None = None,
+        clock: Callable[[], float] | None = None,
     ) -> None:
         self._codec = codec
         self._security_core = security_core
+        self._clock = time.time if clock is None else clock
         self._approver_roles = frozenset(approver_roles)
+        self._consumed_tokens: dict[str, int] = {}
+        self._consumed_lock = threading.Lock()
         if not _valid_ids(approver_roles) or not self._approver_roles:
             raise ValueError("explicit approver roles are required")
 
@@ -44,7 +50,7 @@ class ApprovalAuthority:
             raise ApprovalError("approval denied")
         if (confirmed is not True or not _valid_ids(evidence_ids) or not evidence_ids
                 or not all(_valid_id(value) for value in (tenant_id, requester_actor, action, *evidence_ids))
-                or type(expires_at) is not int or expires_at <= int(time.time())
+                or type(expires_at) is not int or expires_at <= int(self._clock())
                 or len(set(evidence_ids)) != len(evidence_ids)):
             self._record_denial(tenant_id, action)
             raise ApprovalError("approval denied")
@@ -72,7 +78,6 @@ class ApprovalAuthority:
         requester_actor: str,
         action: str,
         evidence_ids: Collection[str],
-        now: int | None = None,
     ) -> Principal:
         try:
             claims = self._codec.verify(token)
@@ -80,6 +85,7 @@ class ApprovalAuthority:
             raise ApprovalError("approval denied") from exc
         if not _valid_ids(evidence_ids) or not evidence_ids:
             raise ApprovalError("approval denied")
+        current_time = int(self._clock())
         expected_evidence = sorted(evidence_ids)
         if (set(claims) != {"kind", "tenant", "approver", "role", "requester", "action", "evidence", "exp"}
                 or claims.get("kind") != "human-approval-v1"
@@ -89,10 +95,19 @@ class ApprovalAuthority:
                 or claims.get("evidence") != expected_evidence
                 or claims.get("role") not in self._approver_roles
                 or type(claims.get("exp")) is not int
-                or claims["exp"] <= (int(time.time()) if now is None else now)
+                or claims["exp"] <= current_time
                 or not _valid_id(claims.get("approver"))
                 or claims.get("approver") == requester_actor):
             raise ApprovalError("approval denied")
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        with self._consumed_lock:
+            self._consumed_tokens = {
+                digest: expiry for digest, expiry in self._consumed_tokens.items()
+                if expiry > current_time
+            }
+            if token_hash in self._consumed_tokens:
+                raise ApprovalError("approval denied")
+            self._consumed_tokens[token_hash] = claims["exp"]
         return Principal(tenant_id=tenant_id, actor_id=claims["approver"], role=claims["role"])
 
     def _record_denial(self, tenant_id: str, action: str) -> None:

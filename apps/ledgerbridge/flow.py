@@ -281,15 +281,27 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
         )
 
     evidence_ids = tuple(record.source_id for record in source.records)
+    review_cues = task_result["exceptions_for_human_review"]
+    focus_cue = review_cues[0] if review_cues else None
+    ai_evidence_ids = tuple(focus_cue["source_ids"]) if focus_cue else (evidence_ids[0],)
+    ai_brief = {
+        "scope": "public Treasury cash only; not company books",
+        "review_cue": (
+            {"as_of": focus_cue["as_of"], "cue": focus_cue["exception"], "source_ids": focus_cue["source_ids"]}
+            if focus_cue else None
+        ),
+        "source_ids": list(ai_evidence_ids),
+    }
     ai = complete_grounded(
         ai_client,
-        "Summarize this public Treasury cash-category review using only the cited live rows. State that it is not a company ledger and give no posting instructions. Data: " + json.dumps(task_result, sort_keys=True),
-        system="Use only the cited public Treasury rows, state limits, and never post or order a transaction.",
-        evidence_ids=evidence_ids,
+        "Write one short sentence for the finance reviewer about the supplied public-cash cue. If present, describe it as needing human review only, not proof of an error; if absent, say no single-sided cue appears. State this is not a company-ledger variance and recommend comparison with authorized company records. Cite the supplied source ID as [evidence:ID]. Never suggest posting. Data: "
+        + json.dumps(ai_brief, sort_keys=True, separators=(",", ":")),
+        system="Use only the supplied Treasury evidence; do not infer magnitude; never recommend posting.",
+        evidence_ids=ai_evidence_ids,
         protected_canaries=BETA_IDS,
     )
-    if ai["ai_status"] == "AI / LOCAL":
-        ai["ai_status"] = "AI / LOCAL (APP-REPORTED; INDEPENDENT VERIFICATION REQUIRED)"
+    if ai["ai_status"] in {"AI / LOCAL", "AI / PROVIDER"}:
+        ai["ai_status"] = "AI CANDIDATE (unwitnessed)"
     ai["ai_completion_verdict"] = "UNVERIFIED"
     ai["ai_summary"] = ai["ai_output"] or ai["ai_handoff"]
     return {

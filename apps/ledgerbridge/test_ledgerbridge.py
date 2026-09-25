@@ -149,12 +149,34 @@ class LedgerBridgeTests(unittest.TestCase):
         self.assertEqual(result["human_handoff"]["source_records"][0]["source_id"], result["source_ids"][0])
         self.assertEqual(result["human_handoff"]["source_records"][0]["source_url"], "https://stub.invalid/treasury")
         prompt = complete.call_args.args[1]
+        self.assertLess(len(prompt), 1000)
+        self.assertIn('"review_cue"', prompt)
+        self.assertNotIn('"accounted_source_ids"', prompt)
+        focus_ids = task["exceptions_for_human_review"][0]["source_ids"]
+        self.assertTrue(all(source_id in prompt for source_id in focus_ids))
+        self.assertNotIn(result["source_ids"][0], prompt)
         exposed = json.dumps(result, sort_keys=True) + prompt
         self.assertNotIn("Agriculture", exposed)
         self.assertNotIn('"category"', exposed)
         self.assertEqual(result["ai_status"], "NON-AI / DETERMINISTIC FALLBACK")
         self.assertEqual(result["ai_completion_verdict"], "UNVERIFIED")
         self.assertEqual(result["side_effect_count"], 0)
+
+    def test_live_provider_answer_stays_an_unwitnessed_candidate(self):
+        provider_result = {
+            "ai_status": "AI / PROVIDER", "ai_output": "Public cash review [evidence:2026-09-21:II:1].",
+            "ai_handoff": None, "ai_invoked": True,
+            "ai_evidence": {"trace_provenance": "app-reported"},
+            "ai_evidence_provenance": "app-reported",
+        }
+        with patch("apps.ledgerbridge.flow.fetch_live", side_effect=_adversarial_stub_transport), patch(
+            "apps.ledgerbridge.flow.complete_grounded", return_value=provider_result,
+        ):
+            result = run_live(ai_client=object())
+
+        self.assertEqual(result["ai_status"], "AI CANDIDATE (unwitnessed)")
+        self.assertEqual(result["ai_completion_verdict"], "UNVERIFIED")
+        self.assertEqual(result["ai_evidence_provenance"], "app-reported")
 
     def test_live_unavailable_does_not_fall_back_to_fixture(self):
         with patch("apps.ledgerbridge.flow.fetch_live", side_effect=DataUnavailable("HTTP 429")):

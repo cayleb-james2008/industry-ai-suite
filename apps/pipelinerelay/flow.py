@@ -7,7 +7,7 @@ import re
 import secrets
 import time
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -229,28 +229,28 @@ def _repository_metadata(record: SourceRecord, request_url: str) -> dict[str, st
     }
 
 
-def _public_research_summary(
-    ai_client: LocalOpenAIClient | None,
-    metadata: dict[str, str],
-    evidence_id: str,
-) -> dict[str, object]:
-    prompt = (
-        "Summarize only the actual public GitHub repository metadata below. Do not infer a "
-        "sales prospect, buyer intent, private account need, CRM status, consent, contact "
-        "details, or permission for outreach. Give one human verification task and cite the "
-        f"repository using [evidence:{evidence_id}].\n"
-        f"Metadata: {json.dumps(metadata, sort_keys=True)}"
-    )
-    return complete_grounded(
-        ai_client,
-        prompt,
-        system="You are a public repository research assistant. Do not create leads or contact anyone.",
-        evidence_ids=(evidence_id,),
-    )
+def _public_research_checks(record: SourceRecord, evidence_id: str) -> list[dict[str, object]]:
+    updated_at = datetime.fromisoformat(record.as_of.replace("Z", "+00:00"))
+    retrieved_at = datetime.fromisoformat(record.retrieved_at_utc.replace("Z", "+00:00"))
+    age_days = max(0, (retrieved_at.astimezone(timezone.utc) - updated_at.astimezone(timezone.utc)).days)
+    return [
+        {"check": "repository_identity", "status": "PASS", "evidence_ids": [evidence_id]},
+        {"check": "reported_license", "status": "PASS", "value": "MIT", "evidence_ids": [evidence_id]},
+        {
+            "check": "source_update_age", "status": "OBSERVED", "days": age_days,
+            "as_of": record.as_of, "precision": record.as_of_precision,
+            "note": "This is the repository metadata timestamp, not proof of current activity.",
+            "evidence_ids": [evidence_id],
+        },
+        {
+            "check": "sales_account_and_consent", "status": "UNVERIFIED",
+            "note": "Public repository metadata is not CRM, account, lead, customer, or consent evidence.",
+        },
+    ]
 
 
 def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
-    """Summarize permitted metadata from one public MIT repository, not CRM data."""
+    """Prepare a deterministic public-repository research handoff, not a sales lead."""
     try:
         source = fetch_live(
             Provider.GITHUB_REPOSITORY,
@@ -274,7 +274,6 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
         return _live_failure(error.status, str(error), source)
 
     evidence_id = f"github-repo-{record.source_id}"
-    ai = _public_research_summary(ai_client, metadata, evidence_id)
     return {
         "project": PROJECT,
         "status": "VERIFIED_SOURCE",
@@ -287,8 +286,9 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
             ),
             "metadata": metadata,
             "citations": [evidence_id],
+            "review_checks": _public_research_checks(record, evidence_id),
             "human_verification_task": (
-                "Confirm the repository identity and license at the cited GitHub source and decide whether it is relevant to an explicitly authorized public-research question; do not create a lead or initiate contact."
+                "A human reviewer must confirm the repository identity, license, and metadata update date, then decide whether it is relevant to an explicitly authorized public-research question; do not create a lead or initiate contact."
             ),
         },
         "source": {
@@ -318,24 +318,23 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
         }],
         "uncertainty": [
             "A public repository is not a private customer or sales account; no CRM records, account consent, user-authored issue text, or contact details were requested.",
-            "Any optional local-AI response remains unverified without an independent observer.",
+            "Repository metadata does not establish current code contents or recent work beyond its returned timestamp.",
         ],
         "risk": ["Do not infer buyer intent, account need, relationship, consent, or outreach permission from public repository metadata."],
         "handoff": {
             "owner": "public-repository-research-review",
             "next_action": "Verify the repository identity/license and assess relevance only within a separately authorized public-research task.",
         },
-        "ai_status": ai["ai_status"],
-        "ai_invoked": ai["ai_invoked"],
-        "ai_output": ai["ai_output"],
-        "ai_failure": ai["ai_failure"],
-        "ai_handoff": ai["ai_handoff"],
-        "ai_evidence": ai["ai_evidence"],
-        "ai_verification_status": "UNVERIFIED — app-reported AI execution is not independent evidence",
+        "ai_status": "NON-AI / DETERMINISTIC FALLBACK",
+        "ai_invoked": False,
+        "ai_output": None,
+        "ai_handoff": "A human reviewer can inspect the cited public metadata; no model-generated sales inference is appropriate for this slice.",
+        "ai_evidence": None,
+        "ai_verification_status": "NON-AI — public repository metadata only; no honest AI role",
         "side_effect_count": 0,
         "integration_adapter": {
             "type": "suite_core.fetch_live",
-            "mode": "fixed public GitHub repository metadata; no fixture or cached fallback",
+            "mode": "fixed public GitHub repository metadata plus deterministic identity/license/age checks; no fixture or cached fallback",
             "network_enabled": True,
             "outreach_capability": "none",
         },

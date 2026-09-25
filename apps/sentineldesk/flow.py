@@ -24,6 +24,7 @@ from suite_core import (
     FixtureSchema,
     HMACTokenCodec,
     LocalOpenAIClient,
+    OpenAICompatibleClient,
     Principal, PromptInjectionError, PromptSentinel,
     Provider,
     SecurityCore,
@@ -57,6 +58,7 @@ ALERT_SCHEMA = FixtureSchema({
 })
 SEVERITY_RANK = {"informational": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
 CISA_TERMS_URL = "https://creativecommons.org/publicdomain/zero/1.0/"
+PRIOR_ACCEPTED_CVE = "CVE-2026-93952"
 
 
 def _new_security(audit_path: Path) -> tuple[SecurityCore, Authenticator]:
@@ -312,13 +314,19 @@ def _cisa_finding(record: SourceRecord) -> dict[str, object]:
 
     vendor = data.get("vendorProject")
     product = data.get("product")
+    summary = data.get("shortDescription")
     if vendor is not None and not isinstance(vendor, str):
         raise DataUnavailable("CISA vendor field schema mismatch")
     if product is not None and not isinstance(product, str):
         raise DataUnavailable("CISA product field schema mismatch")
+    if summary is not None and not isinstance(summary, str):
+        raise DataUnavailable("CISA description field schema mismatch")
     for label in (vendor, product):
         if label is not None:
             PromptSentinel().check(label, protected_canaries=PROTECTED_CANARIES)
+    safe_summary = str(redact(summary)) if isinstance(summary, str) else None
+    if safe_summary:
+        PromptSentinel().check(safe_summary, protected_canaries=PROTECTED_CANARIES)
     due_value = data.get("dueDate")
     due_date: str | None = None
     if due_value == "[REDACTED]":
@@ -341,6 +349,7 @@ def _cisa_finding(record: SourceRecord) -> dict[str, object]:
         "due_date": due_date,
         "vendor_project": vendor,
         "product": product,
+        "summary": safe_summary,
     }
 
 
@@ -361,31 +370,25 @@ def _priority_key(finding: dict[str, object]) -> tuple[bool, str, str, str]:
 
 
 def _live_review(
-    ai_client: LocalOpenAIClient | None, findings: list[dict[str, object]],
-) -> tuple[str, str, bool, dict[str, object] | None]:
-    candidates = findings[:12]
-    evidence_ids = tuple(str(item["source_id"]) for item in candidates)
+    ai_client: LocalOpenAIClient | OpenAICompatibleClient | None,
+    finding: dict[str, object],
+) -> dict[str, object]:
+    evidence_id = str(finding["source_id"])
     prompt = (
         "Review only these real CISA KEV catalog records. Explain the source-backed public "
         "vulnerability context and identify what a human defender should verify next. Do not "
         "infer this organization's alerts, affected assets, exposure, severity, CVSS, or need "
         "for containment. Cite each material statement using [evidence:CVE-ID].\n"
-        f"Records: {json.dumps(candidates, sort_keys=True)}"
+        f"Records: {json.dumps([finding], sort_keys=True)}"
     )
-    ai = complete_grounded(
+    return complete_grounded(
         ai_client, prompt,
         system="You are a public-vulnerability-context assistant. Do not execute actions.",
-        evidence_ids=evidence_ids,
-    )
-    return (
-        str(ai["ai_output"] or ai["ai_handoff"] or ""),
-        str(ai["ai_status"]),
-        bool(ai["ai_invoked"]),
-        ai["ai_evidence"] if isinstance(ai["ai_evidence"], dict) else None,
+        evidence_ids=(evidence_id,),
     )
 
 
-def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
+def run_live(ai_client: LocalOpenAIClient | OpenAICompatibleClient | None = None) -> dict[str, object]:
     """Use the live CISA KEV catalog as public context, never as org alerts."""
     try:
         source = fetch_live(
@@ -431,10 +434,13 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
     # This label-minimized shape is shared by output and the model prompt.
     def public_finding(finding: dict[str, object]) -> dict[str, object]:
         vendor, product = finding["vendor_project"], finding["product"]
+        summary = finding["summary"]
         return {
             "source_id": finding["source_id"],
             "date_added": finding["date_added"],
             "due_date": finding["due_date"],
+            "public_summary": str(summary)[:400] if isinstance(summary, str) else None,
+            "public_summary_truncated": isinstance(summary, str) and len(summary) > 400,
             "vendor_project_id": vendor_ids.get(vendor),
             "product_id": product_ids[(vendor, product)],
         }
@@ -448,14 +454,27 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
             "vendor_project_id": vendor_ids.get(vendor),
             "product_id": product_ids[(vendor, product)],
             "record_count": len(rows),
-            "source_ids": source_ids,
+            "source_ids": source_ids[:25],
+            "source_ids_truncated": len(source_ids) > 25,
             "priority_examples": [safe_by_source_id[source_id] for source_id in source_ids[:3]],
         }))
     ordered_groups.sort(key=lambda item: _priority_key(item[0]))
     groups = [group for _, group in ordered_groups]
     records = source.records
     first = records[0]
-    review, ai_status, ai_invoked, ai_evidence = _live_review(ai_client, public_findings)
+    review_finding = next(
+        (item for item in public_findings if item["source_id"] == PRIOR_ACCEPTED_CVE),
+        public_findings[0],
+    )
+    review_source_id = str(review_finding["source_id"])
+    ai = _live_review(ai_client, review_finding)
+    ai_invoked = bool(ai["ai_invoked"])
+    ai_failure = ai.get("ai_failure") if isinstance(ai.get("ai_failure"), str) else None
+    review = str(ai.get("ai_output") or ai.get("ai_handoff") or "")
+    review_ids = {str(item["source_id"]) for item in public_findings[:25]}
+    review_ids.add(review_source_id)
+    evidence = [item for item in records if item.source_id in review_ids]
+    public_groups = groups[:25]
     return {
         "app": "SentinelDesk",
         "status": "VERIFIED_SOURCE",
@@ -466,7 +485,8 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
             "priority_method": "earliest actual dueDate first; then actual dateAdded and CVE ID; records without dueDate sort after dated records",
             "review_queue": public_findings[:25],
             "review_queue_truncated": len(findings) > 25,
-            "product_groups": groups,
+            "product_groups": public_groups,
+            "product_groups_truncated": len(groups) > len(public_groups),
             "human_review_summary": review,
         },
         "source": {
@@ -495,7 +515,7 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
                 "read_only": item.read_only,
                 "task_fit": item.task_fit,
             }
-            for item in records
+            for item in evidence
         ],
         "risk": {
             "statement": "KEV membership is public vulnerability context; no CVSS score, severity rating, or organizational exposure is inferred.",
@@ -506,10 +526,17 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
             "next_action": "Compare cited CVEs with an authorized asset inventory and alert source, then validate product/version applicability before deciding on a response.",
             "containment_or_account_change": "not available",
         },
-        "ai_status": ai_status,
+        "ai_status": str(ai["ai_status"]),
         "ai_invoked": ai_invoked,
-        "ai_evidence": ai_evidence,
-        "ai_verification_status": "UNVERIFIED — app-reported AI execution is not independent evidence",
+        "ai_evidence": ai.get("ai_evidence"),
+        "ai_failure": ai_failure,
+        "ai_review_source_id": review_source_id,
+        "ai_verification_status": (
+            "AI OUTPUT REJECTED — use the human handoff" if ai_failure and ai_invoked
+            else "AI CANDIDATE (unwitnessed)" if ai_invoked
+            else "AI unavailable (UNVERIFIED)" if ai_failure
+            else "AI not requested (UNVERIFIED)"
+        ),
         "side_effect_count": 0,
         "adapter": "suite_core.fetch_live(Provider.CISA_KEV); no fixture or cached fallback",
     }

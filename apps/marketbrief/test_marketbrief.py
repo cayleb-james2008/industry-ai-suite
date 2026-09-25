@@ -100,7 +100,14 @@ class MarketBriefTests(unittest.TestCase):
             run_demo(ai_client=object())
 
     def test_live_builds_cited_macro_slice_from_stub_records_only(self):
-        with patch("apps.marketbrief.flow.fetch_live", side_effect=_adversarial_stub_transport):
+        fake_ai_result = {
+            "ai_output": None, "ai_handoff": "Review cited macro evidence.",
+            "ai_status": "NON-AI / DETERMINISTIC FALLBACK", "ai_invoked": False,
+            "ai_evidence": None,
+        }
+        with patch("apps.marketbrief.flow.fetch_live", side_effect=_adversarial_stub_transport), patch(
+            "apps.marketbrief.flow.complete_grounded", return_value=fake_ai_result,
+        ) as complete:
             result = run_live()
         brief = result["task_result"]
         self.assertEqual(result["source_status"], "VERIFIED_SOURCE")
@@ -121,6 +128,32 @@ class MarketBriefTests(unittest.TestCase):
         self.assertEqual(result["ai_status"], "NON-AI / DETERMINISTIC FALLBACK")
         self.assertEqual(result["ai_completion_verdict"], "UNVERIFIED")
         self.assertEqual(result["side_effect_count"], 0)
+        prompt = complete.call_args.args[1]
+        self.assertLess(len(prompt), 1200)
+        self.assertIn("USA:NY.GDP.MKTP.CD:2024", prompt)
+        self.assertIn("USA:NY.GDP.MKTP.CD:2025", prompt)
+        self.assertNotIn("USA:NY.GDP.MKTP.CD:2011", prompt)
+        self.assertIn("not a security return", prompt)
+        self.assertEqual(
+            complete.call_args.kwargs["evidence_ids"],
+            ("USA:NY.GDP.MKTP.CD:2024", "USA:NY.GDP.MKTP.CD:2025"),
+        )
+
+    def test_live_provider_answer_stays_an_unwitnessed_candidate(self):
+        provider_result = {
+            "ai_status": "AI / PROVIDER", "ai_output": "Nominal macro context [evidence:USA:NY.GDP.MKTP.CD:2025].",
+            "ai_handoff": None, "ai_invoked": True,
+            "ai_evidence": {"trace_provenance": "app-reported"},
+            "ai_evidence_provenance": "app-reported",
+        }
+        with patch("apps.marketbrief.flow.fetch_live", side_effect=_adversarial_stub_transport), patch(
+            "apps.marketbrief.flow.complete_grounded", return_value=provider_result,
+        ):
+            result = run_live(ai_client=object())
+
+        self.assertEqual(result["ai_status"], "AI CANDIDATE (unwitnessed)")
+        self.assertEqual(result["ai_completion_verdict"], "UNVERIFIED")
+        self.assertEqual(result["ai_evidence_provenance"], "app-reported")
 
     def test_live_unavailable_does_not_fall_back_to_fixture(self):
         with patch("apps.marketbrief.flow.fetch_live", side_effect=DataUnavailable("HTTP 403")):

@@ -2,7 +2,9 @@
 
 # PipelineRelay
 
-PipelineRelay's normal command reads only permitted metadata for the public `pytest-dev/pytest` GitHub repository and prepares a human verification task. The exact [repository metadata API](https://api.github.com/repos/pytest-dev/pytest) response identifies the repository and its MIT license; the corresponding [GitHub MIT license metadata](https://api.github.com/licenses/mit) is recorded as the terms reference. The app does not read README or issue text and does not create sales leads, contacts, CRM claims, or consent claims.
+**Business need:** A salesperson summarizes permitted account context and hands an appropriate next step to an owner. **Current live slice:** PipelineRelay checks public `pytest-dev/pytest` repository metadata and prepares a public-research review; it is not a sales-account workflow.
+
+The exact [repository metadata API](https://api.github.com/repos/pytest-dev/pytest) response identifies the repository and its MIT license; the corresponding [GitHub MIT license metadata](https://api.github.com/licenses/mit) is recorded as the terms reference. The app does not read README or issue text and does not create sales leads, contacts, CRM claims, or consent claims.
 
 From the repository root:
 
@@ -11,7 +13,7 @@ python3 -m apps.pipelinerelay
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/pipelinerelay/tests -v
 ```
 
-The returned metadata includes the exact GitHub repository URL and stable ID, `updated_at` as-of time, retrieval UTC, returned MIT license reference, response hash, task-fit declaration, and zero side effects. The license reference is for the public repository's metadata; it does not establish reuse rights for other GitHub content. An optional local model sees only those live admitted metadata fields and must cite that repository; app-reported output is not independently verified.
+The structured handoff includes the exact GitHub repository URL and stable ID, `updated_at` as-of time and age at retrieval, the returned MIT license reference, response hash, task-fit declaration, and zero side effects. Identity and license checks are cited to the repository record; the age check is a timestamp observation, not proof of current activity. The license reference is for the public repository's metadata; it does not establish reuse rights for other GitHub content. This slice intentionally has no honest AI role: a model-generated sales summary from public repository metadata would add unsupported account meaning.
 
 **Important limit:** public GitHub metadata is not private PipelineRelay account/CRM data, a lead, user consent, or permission to contact anyone. R07 remains `UNVERIFIED` until an authorized CRM/account source, consent evidence, and an accountable owner exist. No outreach adapter exists.
 

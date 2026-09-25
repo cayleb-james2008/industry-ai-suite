@@ -102,19 +102,20 @@ def _ai_summary(ai_client: object, result: dict[str, object], evidence_ids: tupl
 
 
 def run_live(ai_client: object | None = None) -> dict[str, object]:
-    """Fail closed until a permitted source/address exist; no model is invoked."""
+    """Fail closed: candidate API terms are not admitted; no chain call is made."""
     return {
         "project": "ChainWatch",
         "status": "UNVERIFIED",
-        "reason": "Blockscout terms are unverified and no authorized company watch address is configured.",
+        "source_status": "UNVERIFIED — Mempool API terms could not be read and admitted",
+        "reason": "Mempool REST endpoints were reachable, but its terms route returned only a JavaScript shell; no chain source is admitted. The published My First Bitcoin donation address is not an authorized Cayleb/company address.",
         "task_result": None,
         "evidence_ids": [],
         "source_records": [],
-        "uncertainty": "No live chain request was made; organization ownership and exposure are not established.",
+        "uncertainty": "Source-owner terms remain unverified; the app makes no chain request. Public organization context does not establish Cayleb/company ownership or exposure.",
         "risk": "No chain exposure, anomaly, or company treasury claim is reported.",
         "human_handoff": {
             "owner": "treasury-operator",
-            "next_action": "Verify a free read-only source's terms and provide an authorized public watch address before enabling live monitoring.",
+            "next_action": "Make the exact public API terms readable and verify any company watch address before enabling live monitoring.",
         },
         "ai_status": "NOT RUN / NO ADMITTED SOURCE",
         "ai_invoked": False,

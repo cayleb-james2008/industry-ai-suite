@@ -1,0 +1,29 @@
+{
+  "fixture_kind": "recorded_real_source_projection_not_raw_response",
+  "source": {
+    "provider": "federal_register_opm",
+    "request_url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bagency_ids%5D%5B%5D=406&per_page=10&order=newest",
+    "response_status": 200,
+    "response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+    "retrieved_at_utc": "2026-09-24T10:25:58Z",
+    "task_fit": "public_opm_policy_documents",
+    "terms_url": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site"
+  },
+  "record": {
+    "source_id": "2026-19222",
+    "source_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222/employment-in-the-excepted-service",
+    "as_of": "2026-09-18",
+    "as_of_precision": "day",
+    "data": {
+      "agency": "OFFICE OF PERSONNEL MANAGEMENT",
+      "document_number": "2026-19222",
+      "publication_date": "2026-09-18",
+      "type": "Proposed Rule"
+    }
+  },
+  "text_fetch_observation": {
+    "status": "DATA_UNAVAILABLE",
+    "reason": "Federal Register document text returned HTTP 302",
+    "observed_at_utc": "2026-09-24T10:23:33Z"
+  }
+}

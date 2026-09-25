@@ -11,7 +11,7 @@ from typing import Sequence
 from . import (
     AccessPolicy, ApprovalAuthority, AuditLog, Authenticator, FixtureAdapter,
     FixtureSchema, GroundedOutputValidator, HMACTokenCodec, LocalOpenAIClient,
-    NonAIFallback, Principal, PromptSentinel, SecurityCore,
+    NonAIFallback, Principal, PromptSentinel, SecurityCore, ai_configuration_status,
 )
 
 _ROOT = Path(__file__).resolve().parent.parent
@@ -66,9 +66,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands.add_parser("demo", help="run a no-hidden-state, NON-AI safe fixture demo")
     commands.add_parser("check", help="run the same core safety smoke checks and local model probe")
     commands.add_parser("contract", help="print the app integration contract")
+    commands.add_parser("doctor", help="report AI route readiness without exposing credentials")
     args = parser.parse_args(argv)
     if args.command == "contract":
         print((_ROOT / "CONTRACT.md").read_text(encoding="utf-8"), end="")
+        return 0
+    if args.command == "doctor":
+        status = ai_configuration_status()
+        print(json.dumps({"ai": status, "non_ai_workflow": "available"}, indent=2, sort_keys=True))
         return 0
     result = _run_demo()
     print(json.dumps(result, indent=2, sort_keys=True))

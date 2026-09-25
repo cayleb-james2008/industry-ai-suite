@@ -102,6 +102,8 @@ class ChainWatchTests(unittest.TestCase):
         ):
             result = run_live(ai_client=object())
         self.assertEqual(result["status"], "UNVERIFIED")
+        self.assertIn("Mempool", result["reason"])
+        self.assertEqual(result["source_status"], "UNVERIFIED — Mempool API terms could not be read and admitted")
         self.assertIsNone(result["task_result"])
         self.assertEqual(result["source_records"], [])
         self.assertFalse(result["ai_invoked"])

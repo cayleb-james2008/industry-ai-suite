@@ -382,6 +382,45 @@ class SafetyBoundaryTests(unittest.TestCase):
         self.assertEqual(self.audit.records()[-1]["outcome"], "simulated")
         self.assertEqual(self.audit.records()[-1]["approved_by"], "manager")
 
+    def test_approval_tokens_reject_tampering_expiry_and_replay(self) -> None:
+        authority = self._approval_authority()
+        token = authority.issue(
+            self._approver_token(), tenant_id="tenant-a", requester_actor="alice",
+            action="send_reply", evidence_ids=("a-policy",), expires_at=NOW + 60, confirmed=True,
+        )
+        tampered = token[:-1] + ("A" if token[-1] != "A" else "B")
+        with self.assertRaises(ApprovalError):
+            authority.verify(
+                tampered, tenant_id="tenant-a", requester_actor="alice",
+                action="send_reply", evidence_ids=("a-policy",),
+            )
+        with self.assertRaises(TypeError):
+            authority.verify(
+                token, tenant_id="tenant-a", requester_actor="alice",
+                action="send_reply", evidence_ids=("a-policy",), now=NOW + 60,
+            )
+        future_clock = ApprovalAuthority(
+            HMACTokenCodec(APPROVAL_KEY), security_core=self.core, clock=lambda: NOW + 60,
+        )
+        with self.assertRaises(ApprovalError):
+            future_clock.verify(
+                token, tenant_id="tenant-a", requester_actor="alice",
+                action="send_reply", evidence_ids=("a-policy",),
+            )
+
+        sink = SimulatedSink(authority, self.audit, {"send_reply"})
+        receipt = sink.execute(
+            self.requester, action="send_reply", evidence_ids=("a-policy",), approval_token=token,
+        )
+        self.assertEqual(receipt.status, "SIMULATED ONLY")
+        with self.assertRaises(ApprovalError):
+            sink.execute(
+                self.requester, action="send_reply", evidence_ids=("a-policy",), approval_token=token,
+            )
+        self.assertEqual(sink.receipts, (receipt,))
+        self.assertEqual(self.audit.records()[-1]["outcome"], "denied")
+        self.assertEqual(self.audit.records()[-1]["evidence"], [])
+
     def test_audit_is_minimal_append_only_and_contains_no_credentials(self) -> None:
         token = self.auth.issue(self.requester, expires_at=NOW + 60)
         self.core.authorize(token, tenant_id="tenant-a", action="read", evidence_ids=("a-policy",))
@@ -398,51 +437,89 @@ class SafetyBoundaryTests(unittest.TestCase):
         raw = {"email": "person@example.invalid", "fullName": "Ada Person",
                "customer_name": "Customer One", "first_name": "First One",
                "street_address": "8 Sensitive Road", "api_secret": "secret-value",
-               "note": "Call +1 (555) 222-1234", "api_key": "never"}
+                "customer_email": "nested@example.invalid",
+                "note": "Call +1 (555) 222-1234. Avery Morgan gave account number: 9876543210123456.",
+                "request_url": "https://service.invalid/read?access_token=temporary-token-value",
+                "fragment_url": "https://service.invalid/callback#access_token=fragment-token-value",
+                "token_fragment_url": "https://service.invalid/callback#token=fragment-token-value-2",
+                "code_fragment_url": "https://service.invalid/callback#code=fragment-code-value",
+                "userinfo_url": "https://user:password-value@service.invalid/path",
+                "headers": {"Authorization": "Bearer nested-header-value"},
+                "api_key": "never"}
         value = redact(raw)
         self.assertNotIn("person@example.invalid", json.dumps(value))
+        self.assertNotIn("nested@example.invalid", json.dumps(value))
         self.assertNotIn("Ada Person", json.dumps(value))
         self.assertNotIn("Customer One", json.dumps(value))
         self.assertNotIn("First One", json.dumps(value))
+        self.assertNotIn("Avery Morgan", json.dumps(value))
         self.assertNotIn("8 Sensitive Road", json.dumps(value))
         self.assertNotIn("secret-value", json.dumps(value))
         self.assertNotIn("222-1234", json.dumps(value))
+        self.assertNotIn("9876543210123456", json.dumps(value))
+        self.assertNotIn("temporary-token-value", json.dumps(value))
+        self.assertNotIn("fragment-token-value", json.dumps(value))
+        self.assertNotIn("fragment-token-value-2", json.dumps(value))
+        self.assertNotIn("fragment-code-value", json.dumps(value))
+        self.assertNotIn("user:password-value", json.dumps(value))
+        self.assertNotIn("nested-header-value", json.dumps(value))
         self.assertNotIn("never", json.dumps(value))
+        self.assertEqual(redact({"author": "Xavier Ochoa"}), {"author": "[REDACTED]"})
+        self.assertEqual(redact("Xavier Ochoa shared a note"), "[REDACTED] shared a note")
+        self.assertEqual(redact("Evidence CVE-2026-93952"), "Evidence CVE-2026-93952")
         ordinary_log = json.dumps({"event": "output", "payload": redact(raw)})
         for secret in ("Customer One", "First One", "8 Sensitive Road", "secret-value"):
             self.assertNotIn(secret, ordinary_log)
 
     def test_free_text_source_label_screen_flags_contact_and_address_patterns(self) -> None:
         for value in (
+            "Avery Morgan",
+            "Xavier Ochoa",
             "Avery Morgan, 19 Example Road",
             "person@example.invalid",
             "+1 (555) 222-1234",
+            "Account number: 9876543210123456",
+            "Authorization: Bearer temporary-header-value",
+            "https://service.invalid/path?api_key=temporary-query-value",
         ):
             with self.subTest(value=value):
                 self.assertTrue(contains_likely_personal_data(value))
-        for value in ("Agriculture", "Acme", "Windows Server 2022"):
+        for value in (
+            "Agriculture", "Acme", "Windows Server 2022", "United States annual GDP",
+            "Example Vendor", "Proposed Rule", "Source date 2026-09-21", "CVE-2026-93952",
+            "Arista VeloCloud Orchestrator",
+        ):
             with self.subTest(value=value):
                 self.assertFalse(contains_likely_personal_data(value))
 
     def test_source_metadata_projection_keeps_provenance_and_allowlists_record_data(self) -> None:
         original = {
             "provider": "world_bank_gdp", "reason": "untrusted provider text",
+            "source_label": "Avery Analytics", "source_id": "123456789012",
+            "request_url": "https://service.invalid/read?api_key=temporary-query-value",
             "records": ({
-                "source_id": "USA:GDP:2025", "as_of": "2025",
+                "source_id": "USA:GDP:2025", "record_id": "123456789012", "as_of": "2025",
                 "retrieved_at_utc": "2026-09-23T00:00:00Z", "terms_url": "https://example.invalid/terms",
                 "data": {
                     "countryiso3code": "USA", "date": "2025", "value": 12,
+                    "note": "Reviewer phone +1 (555) 222-1234",
                     "country": {"value": "Avery Morgan, 19 Example Road"},
                 },
             },),
         }
         projected = project_source_metadata(
-            original, record_data_fields=("countryiso3code", "date", "value"),
+            original, record_data_fields=("countryiso3code", "date", "value", "note"),
         )
         self.assertNotIn("reason", projected)
+        self.assertNotIn("temporary-query-value", json.dumps(projected))
+        self.assertEqual(projected["source_id"], "123456789012")
+        self.assertEqual(projected["source_label"], "Avery Analytics")
+        self.assertEqual(projected["records"][0]["as_of"], "2025")
         self.assertEqual(projected["records"][0]["source_id"], "USA:GDP:2025")
+        self.assertEqual(projected["records"][0]["record_id"], "123456789012")
         self.assertEqual(projected["records"][0]["data"], {
             "countryiso3code": "USA", "date": "2025", "value": 12,
+            "note": "Reviewer phone [REDACTED]",
         })
         self.assertIn("country", original["records"][0]["data"])
         self.assertNotIn("data", project_source_metadata(original)["records"][0])

@@ -10,6 +10,7 @@ import re
 import secrets
 import stat
 import time
+from collections.abc import Mapping
 from datetime import date, datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -18,9 +19,13 @@ from apps._ai_receipts import complete_grounded
 
 from suite_core import (
     AccessDenied, AccessPolicy, ApprovalAuthority, AuditLog, Authenticator,
+    DataUnavailable, LiveSourceError, Provider, SourceRecord, TaskFit,
     FixtureAdapter, FixtureSchema, HMACTokenCodec, LocalOpenAIClient,
-    Principal, PromptInjectionError, PromptSentinel, SecurityCore, SimulatedSink, redact,
+    Principal, PromptInjectionError, PromptSentinel, SecurityCore, SimulatedSink,
+    fetch_live, redact,
 )
+from suite_core.live_sources import fetch_govinfo_opm_text, govinfo_opm_url
+from suite_core.sources.federal_register import canonical_document_url
 
 PROJECT = "ReplyCraft"
 ACTION = "draft_support_reply"
@@ -28,6 +33,13 @@ ROLE = "support_agent"
 CASE_EVIDENCE = "support-case-104"
 POLICY_EVIDENCE = "support-policy-104"
 TENANT_B_CANARY = "TENANT_B_REPLYCRAFT_CANARY_91D4"
+PUBLIC_POLICY_QUESTION = (
+    "SAMPLE QUESTION — By what date must the public submit comments on this OPM proposal?"
+)
+_CUSTOMER_SUPPORT_GAPS = (
+    "consent-authorized customer support case",
+    "approved internal support policy",
+)
 FIXTURES = Path(__file__).parent / "fixtures"
 IMPORT_ROOT = Path.home() / ".local/share/industry-ai-suite/replycraft/imports"
 IMPORT_MAX_BYTES = 64_000
@@ -225,6 +237,206 @@ def _import_status(status: str, reason: str, missing_sources: list[str]) -> dict
     }
 
 
+def _public_document(record: SourceRecord) -> dict[str, object]:
+    if (record.provider != Provider.FEDERAL_REGISTER_OPM.value
+            or record.task_fit != TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS.value
+            or record.read_only is not True):
+        raise DataUnavailable("Federal Register OPM metadata failed application validation")
+    return {
+        "source_id": record.source_id,
+        "source_url": canonical_document_url(record.source_url, record.source_id, record.as_of),
+        "as_of": record.as_of,
+        "as_of_precision": record.as_of_precision,
+        "retrieved_at_utc": record.retrieved_at_utc,
+        "terms_url": record.terms_url,
+        "response_status": record.response_status,
+        "response_sha256": record.response_sha256,
+        "task_fit": record.task_fit,
+        "read_only": record.read_only,
+    }
+
+
+def _public_policy_unavailable(
+    status: str,
+    reason: str,
+    *,
+    request_url: str | None = None,
+    metadata: SourceRecord | None = None,
+) -> dict[str, object]:
+    evidence = []
+    if metadata is not None:
+        try:
+            evidence.append(_public_document(metadata))
+        except DataUnavailable:
+            pass
+    return {
+        "project": PROJECT,
+        "status": status,
+        "source_status": status,
+        "workflow_status": "UNVERIFIED — public-policy sample only; customer support is not established",
+        "request_url": request_url,
+        "task_result": {
+            "status": status,
+            "question": PUBLIC_POLICY_QUESTION,
+            "draft": None,
+            "send_attempted": False,
+        },
+        "evidence": evidence,
+        "missing_sources": [*_CUSTOMER_SUPPORT_GAPS,
+            "reusable, identity-matched public policy text with a safe DATES section",
+        ],
+        "uncertainty": [reason],
+        "handoff": {
+            "owner": "public-policy-review-queue (role placeholder)",
+            "next_action": "A human reviewer must inspect the official source; no customer response is available.",
+        },
+        "ai_status": "NOT USED — no AI claim",
+        "ai_invoked": False,
+        "ai_output": None,
+        "ai_completion_claim": False,
+        "side_effect_count": 0,
+        "send_attempted": False,
+        "integration_adapter": {
+            "type": "suite_core.fetch_live + fetch_govinfo_opm_text",
+            "read_only": True,
+            "send_capability": False,
+        },
+    }
+
+
+def run_public_policy() -> dict[str, object]:
+    """Return a public-policy sample only; it is never a customer case or send."""
+    try:
+        source = fetch_live(
+            Provider.FEDERAL_REGISTER_OPM,
+            task_fit=TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+        )
+    except LiveSourceError as error:
+        return _public_policy_unavailable(
+            error.status,
+            "The live Federal Register OPM metadata request failed; no fixture or cache was used.",
+        )
+    if source.status != "VERIFIED_SOURCE" or not source.records:
+        return _public_policy_unavailable(
+            "UNVERIFIED",
+            source.reason or "The live OPM source did not return admitted metadata.",
+            request_url=source.request_url,
+        )
+    if (source.provider != Provider.FEDERAL_REGISTER_OPM.value
+            or source.task_fit != TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS.value
+            or source.read_only is not True or source.response_status != 200
+            or len(source.response_sha256) != 64):
+        return _public_policy_unavailable(
+            "DATA_UNAVAILABLE", "The live OPM metadata failed application provenance checks.",
+            request_url=source.request_url,
+        )
+    metadata = next((
+        item for item in source.records
+        if item.data.get("type") in {"Rule", "Proposed Rule"}
+        and isinstance(item.data.get("title"), str)
+    ), None)
+    if metadata is None:
+        return _public_policy_unavailable(
+            "UNVERIFIED", "No safe OPM Rule or Proposed Rule was returned for the public sample.",
+            request_url=source.request_url,
+        )
+    try:
+        public_document = _public_document(metadata)
+    except DataUnavailable:
+        return _public_policy_unavailable(
+            "DATA_UNAVAILABLE", "The live OPM metadata failed document identity validation.",
+            request_url=source.request_url,
+        )
+
+    request_url: str | None = None
+    try:
+        request_url = govinfo_opm_url(metadata)
+        text = fetch_govinfo_opm_text(metadata)
+    except LiveSourceError as error:
+        return _public_policy_unavailable(
+            error.status,
+            f"The direct official GovInfo text request failed ({error.status}); no redirect or fallback was used.",
+            request_url=request_url, metadata=metadata,
+        )
+    sections = text.data.get("sections") if isinstance(text.data, Mapping) else None
+    required_sections = {"DATES"}
+    if (
+        text.provider != metadata.provider or text.source_id != metadata.source_id
+        or text.source_url != request_url or text.response_status != 200
+        or text.as_of != metadata.as_of or text.as_of_precision != "day"
+        or text.terms_url != "https://www.govinfo.gov/about/policies#copyright"
+        or text.read_only is not True or text.task_fit != "public_opm_policy_text"
+        or not text.retrieved_at_utc.endswith("Z")
+        or text.data.get("metadata_source_url") != metadata.source_url
+        or text.data.get("metadata_response_sha256") != metadata.response_sha256
+        or text.data.get("federal_register_terms_url") != metadata.terms_url
+        or not isinstance(sections, Mapping) or not required_sections.issubset(sections)
+        or any(not isinstance(sections[name], list) or not sections[name] for name in required_sections)
+    ):
+        return _public_policy_unavailable(
+            "DATA_UNAVAILABLE", "GovInfo text did not pass identity, reuse-terms, or section checks.",
+            request_url=request_url, metadata=metadata,
+        )
+
+    dates_text = " ".join(str(item) for item in sections["DATES"])
+    citations = [f"{metadata.source_id}#DATES"]
+    draft = f"Public-policy sample only: {dates_text} [evidence:{citations[0]}]"
+    evidence = [public_document, {
+        "source_id": text.source_id,
+        "source_url": text.source_url,
+        "as_of": text.as_of,
+        "as_of_precision": text.as_of_precision,
+        "retrieved_at_utc": text.retrieved_at_utc,
+        "terms_url": text.terms_url,
+        "response_status": text.response_status,
+        "response_sha256": text.response_sha256,
+        "task_fit": text.task_fit,
+        "read_only": text.read_only,
+    }]
+    return {
+        "project": PROJECT,
+        "status": "VERIFIED_SOURCE",
+        "source_status": "VERIFIED_SOURCE",
+        "policy_text_status": "VERIFIED_SOURCE",
+        "workflow_status": "UNVERIFIED — public-policy sample only; customer support remains unverified",
+        "request_url": source.request_url,
+        "task_result": {
+            "status": "PUBLIC_POLICY_QA_SAMPLE",
+            "question": PUBLIC_POLICY_QUESTION,
+            "document_id": metadata.source_id,
+            "draft": draft,
+            "citations": citations,
+            "sample_only": True,
+            "customer_case": False,
+            "human_approval_required_before_use": True,
+            "send_attempted": False,
+        },
+        "evidence": evidence,
+        "missing_sources": list(_CUSTOMER_SUPPORT_GAPS),
+        "uncertainty": [
+            "This is a sample about a public OPM proposal, not an individual customer or a company policy.",
+            "The Federal Register HTML source is informational; consult the official GovInfo edition for legal research.",
+        ],
+        "risk": ["No customer communication or account action is authorized or attempted."],
+        "handoff": {
+            "owner": "public-policy-review-queue (role placeholder; no individual owner verified)",
+            "next_action": "A human reviewer must approve or revise this sample before any separate use; no send endpoint is enabled.",
+        },
+        "ai_status": "NON-AI / DETERMINISTIC PUBLIC-POLICY SAMPLE",
+        "ai_invoked": False,
+        "ai_output": None,
+        "ai_completion_claim": False,
+        "side_effect_count": 0,
+        "send_attempted": False,
+        "approval_endpoint": "human-review-only; no message-send capability",
+        "integration_adapter": {
+            "type": "suite_core.fetch_live + fetch_govinfo_opm_text",
+            "read_only": True,
+            "send_capability": False,
+        },
+    }
+
+
 def run_live(
     ai_client: LocalOpenAIClient | None = None,
     *,
@@ -235,15 +447,7 @@ def run_live(
     if ai_client is not None and type(ai_client) is not LocalOpenAIClient:
         raise TypeError("ai_client must be a real LocalOpenAIClient instance")
     if import_path is None:
-        return _import_status(
-            "UNVERIFIED",
-            "No real authorized customer case or approved internal support policy was supplied; public GitHub issues are not customer cases.",
-            [
-                "consent-authorized real customer support case import",
-                "approved internal support policy import",
-                "provenance-and-consent manifest tied to the exact import bytes",
-            ],
-        )
+        return run_public_policy()
     if consent_manifest_path is None:
         consent_manifest_path = Path(import_path).with_suffix(".consent.json")
     try:

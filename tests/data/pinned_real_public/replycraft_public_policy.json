@@ -1,0 +1,61 @@
+{
+  "fixture_kind": "recorded_real_source_projection_not_raw_response",
+  "captured_at_utc": "2026-09-24T15:41:01Z",
+  "terms_limit": "This is an offline regression projection, not a current source response or production fallback.",
+  "source": {
+    "provider": "federal_register_opm",
+    "status": "VERIFIED_SOURCE",
+    "request_url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bagency_ids%5D%5B%5D=406&per_page=10&order=newest",
+    "response_status": 200,
+    "response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+    "request_body_sha256": null,
+    "retrieved_at_utc": "2026-09-24T15:41:01Z",
+    "terms_url": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site",
+    "task_fit": "public_opm_policy_documents",
+    "read_only": true
+  },
+  "records": [
+    {
+      "source_id": "2026-19222",
+      "source_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222/employment-in-the-excepted-service",
+      "as_of": "2026-09-18",
+      "as_of_precision": "day",
+      "data": {
+        "document_number": "2026-19222",
+        "publication_date": "2026-09-18",
+        "title": "Employment in the Excepted Service",
+        "type": "Proposed Rule",
+        "agency": "OFFICE OF PERSONNEL MANAGEMENT"
+      }
+    }
+  ],
+  "text": {
+    "provider": "federal_register_opm",
+    "source_id": "2026-19222",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+    "response_status": 200,
+    "response_sha256": "21793dd82351de963fc623b26fc312e9c0ace4a8c38b13627fed101d713c7c0c",
+    "request_body_sha256": null,
+    "as_of": "2026-09-18",
+    "as_of_precision": "day",
+    "retrieved_at_utc": "2026-09-24T15:41:01Z",
+    "terms_url": "https://www.govinfo.gov/about/policies#copyright",
+    "read_only": true,
+    "task_fit": "public_opm_policy_text",
+    "data": {
+      "title": "Employment in the Excepted Service",
+      "type": "Proposed Rule",
+      "document_text": [
+        "Comments must be received on or before November 17, 2026."
+      ],
+      "sections": {
+        "DATES": [
+          "Comments must be received on or before November 17, 2026."
+        ]
+      },
+      "metadata_response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+      "metadata_source_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222/employment-in-the-excepted-service",
+      "federal_register_terms_url": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site"
+    }
+  }
+}

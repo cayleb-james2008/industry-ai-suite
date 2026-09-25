@@ -1,20 +1,27 @@
+import io
 import json
 import secrets
 import time
 import unittest
+from contextlib import redirect_stdout
+from dataclasses import replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from suite_core import (
-    AccessDenied, Authenticator, FixtureAdapter, FixtureError, FixtureSchema, HMACTokenCodec,
-    Principal, PromptInjectionError, PromptSentinel, Provider, SourceRecord, TaskFit,
+    AccessDenied, Authenticator, DataUnavailable, FixtureAdapter, FixtureError, FixtureSchema,
+    HMACTokenCodec, LocalOpenAIClient, Principal, PromptInjectionError, PromptSentinel,
+    Provider, SourceRecord, SourceResult, TaskFit,
 )
 import suite_core.live_sources as live_sources
 from apps.onboardpath.flow import (
     ACTION, FIXTURES, FORBIDDEN_PERSONNEL, POLICY_EVIDENCE, REQUEST_EVIDENCE, ROLE,
-    TENANT_B_CANARY, _public_document, _security_stack, run_demo, run_live,
+    TENANT_B_CANARY, _public_document, _security_stack, main as main_cli, run_demo, run_live,
 )
+
+_PII_SLUG = "avery-morgan-19-example-road"
+_CANONICAL_DOCUMENT_URL = "https://www.federalregister.gov/documents/2026/09/18/2026-19222"
 
 
 class _StubTransport:
@@ -33,13 +40,44 @@ class _StubTransport:
         )
 
 
-def _opm_response():
+def _opm_response(html_url="https://www.federalregister.gov/documents/2026/09/18/2026-19222/test"):
     return json.dumps({"results": [{
         "document_number": "2026-19222", "publication_date": "2026-09-18",
         "agencies": [{"id": 406, "raw_name": "OFFICE OF PERSONNEL MANAGEMENT"}],
         "title": "Adversarial test document title", "type": "Rule",
-        "html_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222/test",
+        "html_url": html_url,
     }]}).encode("utf-8")
+
+
+def _metadata_source(html_url="https://www.federalregister.gov/documents/2026/09/18/2026-19222/test") -> SourceResult:
+    return live_sources._fetch_with_transport(
+        Provider.FEDERAL_REGISTER_OPM,
+        task_fit=TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS,
+        owner=None, repo=None, timeout=2.0,
+        transport=_StubTransport(body=_opm_response(html_url)),
+    )
+
+
+def _policy_text_record(source: SourceResult) -> SourceRecord:
+    metadata = source.records[0]
+    return SourceRecord(
+        provider=metadata.provider, source_id=metadata.source_id,
+        source_url="https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+        response_status=200,
+        response_sha256="c" * 64, request_body_sha256=None,
+        as_of=metadata.as_of, as_of_precision="day",
+        retrieved_at_utc="2026-09-24T10:00:00Z",
+        terms_url="https://www.govinfo.gov/about/policies#copyright",
+        read_only=True, task_fit="public_opm_policy_text",
+        data={
+            "title": metadata.data["title"], "type": metadata.data["type"],
+            "document_text": ["The public rule describes a federal employment process for human review."],
+            "sections": {"DATES": ["Comments close on November 17, 2026."]},
+            "metadata_response_sha256": metadata.response_sha256,
+            "metadata_source_url": metadata.source_url,
+            "federal_register_terms_url": metadata.terms_url,
+        },
+    )
 
 
 class OnboardPathTests(unittest.TestCase):
@@ -62,6 +100,8 @@ class OnboardPathTests(unittest.TestCase):
     def test_only_concrete_local_client_is_accepted(self):
         with self.assertRaises(TypeError):
             run_demo(ai_client=object())
+        with self.assertRaises(TypeError):
+            run_live(ai_client=object())
 
     def test_tenant_beta_json_and_csv_are_confined_and_hashed(self):
         adapter = FixtureAdapter(FIXTURES, "tenant-beta")
@@ -111,14 +151,20 @@ class OnboardPathTests(unittest.TestCase):
                 protected_canaries=(TENANT_B_CANARY,),
             )
 
-    def test_live_opm_discovery_is_metadata_only_and_never_claims_employee_access(self):
-        # This synthetic response is an adversarial stub transport for regression tests only.
-        transport = _StubTransport(body=_opm_response())
-        with patch.object(live_sources, "_UrllibTransport", return_value=transport):
+    def test_live_opm_public_rule_text_stays_limited_and_cited(self):
+        # These synthetic source records are adversarial test fixtures, not production evidence.
+        source = _metadata_source()
+        text_record = _policy_text_record(source)
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+        ):
             result = run_live()
         doc = result["task_result"]["documents"][0]
         self.assertEqual(result["status"], "UNVERIFIED")
         self.assertEqual(result["source_status"], "VERIFIED_SOURCE")
+        self.assertEqual(result["policy_text_status"], "VERIFIED_SOURCE")
+        self.assertEqual(result["task_result"]["status"], "PUBLIC_OPM_POLICY_TEXT_REVIEW_ONLY")
         self.assertIsNone(result["task_result"]["answer"])
         self.assertFalse(result["task_result"]["employee_records_loaded"])
         self.assertEqual(doc["document_number"], "2026-19222")
@@ -128,14 +174,150 @@ class OnboardPathTests(unittest.TestCase):
         self.assertTrue(doc["read_only"])
         self.assertEqual(doc["document_type"], "Rule")
         self.assertNotIn("title", doc)
+        selected = result["task_result"]["selected_document"]
+        self.assertEqual(selected["citations"], ["opm-text-2026-19222"])
+        self.assertIn("federal employment process", selected["text_excerpt"])
+        self.assertEqual(result["evidence"][-1]["task_fit"], "public_opm_policy_text")
+        self.assertTrue(result["evidence"][-1]["source_url"].startswith("https://www.govinfo.gov/content/pkg/FR-"))
+        self.assertIn("govinfo.gov/about/policies", result["evidence"][-1]["terms_url"])
+        self.assertIn("employer policy", result["task_result"]["limitation"])
         self.assertEqual(result["side_effect_count"], 0)
         self.assertFalse(result["ai_completion_claim"])
+        self.assertFalse(result["ai_invoked"])
+
+    def test_metadata_slug_is_absent_from_json_cli_and_witness_payload(self):
+        hostile_url = (
+            "https://www.federalregister.gov/documents/2026/09/18/"
+            f"2026-19222/{_PII_SLUG}"
+        )
+        source = _metadata_source(hostile_url)
+        text_record = _policy_text_record(source)
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+        ):
+            result = run_live()
+        serialized = json.dumps(result, sort_keys=True)
+        document = result["task_result"]["documents"][0]
+        self.assertNotIn(_PII_SLUG, serialized)
+        self.assertEqual(document["source_url"], _CANONICAL_DOCUMENT_URL)
+        self.assertEqual(document["document_number"], "2026-19222")
+        self.assertEqual(document["publication_date"], "2026-09-18")
+        self.assertNotIn(_PII_SLUG, json.dumps(result.get("ai_evidence")))
+        self.assertIsNone(result.get("ai_evidence"))
+
+        output = io.StringIO()
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+            redirect_stdout(output),
+        ):
+            self.assertEqual(main_cli(), 0)
+        cli_json = output.getvalue()
+        self.assertNotIn(_PII_SLUG, cli_json)
+        cli_result = json.loads(cli_json)
+        self.assertEqual(
+            cli_result["task_result"]["documents"][0]["source_url"],
+            _CANONICAL_DOCUMENT_URL,
+        )
+        self.assertNotIn(_PII_SLUG, json.dumps(cli_result.get("ai_evidence")))
+        self.assertIsNone(cli_result.get("ai_evidence"))
+
+    def test_direct_metadata_projection_canonicalizes_slug_in_json_cli_and_handoff(self):
+        hostile_url = (
+            "https://www.federalregister.gov/documents/2026/09/18/"
+            f"2026-19222/{_PII_SLUG}"
+        )
+        source = _metadata_source()
+        source = replace(source, records=(replace(source.records[0], source_url=hostile_url),))
+        text_record = _policy_text_record(source)
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+        ):
+            result = run_live()
+        serialized = json.dumps(result, sort_keys=True)
+        self.assertNotIn(_PII_SLUG, serialized)
+        self.assertIn(_CANONICAL_DOCUMENT_URL, serialized)
+        self.assertEqual(result["task_result"]["documents"][0]["source_url"], _CANONICAL_DOCUMENT_URL)
+        self.assertNotIn(_PII_SLUG, json.dumps(result["handoff"]))
+
+        output = io.StringIO()
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+            redirect_stdout(output),
+        ):
+            self.assertEqual(main_cli(), 0)
+        cli_json = output.getvalue()
+        self.assertNotIn(_PII_SLUG, cli_json)
+        self.assertIn(_CANONICAL_DOCUMENT_URL, cli_json)
+        self.assertNotIn(_PII_SLUG, json.dumps(json.loads(cli_json)["handoff"]))
+
+    def test_grounded_summary_uses_only_current_public_rule_text_and_its_id(self):
+        source = _metadata_source()
+        text_record = _policy_text_record(source)
+        fake_result = {
+            "ai_status": "AI / PROVIDER", "ai_invoked": True,
+            "ai_output": "The cited federal rule describes an employment process for review [evidence:opm-text-2026-19222]",
+            "ai_failure": None, "ai_handoff": None,
+            "ai_evidence": {"trace_provenance": "app-reported", "grounded": True},
+        }
+        client = LocalOpenAIClient()
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+            patch("apps.onboardpath.flow.complete_grounded", return_value=fake_result) as complete,
+        ):
+            result = run_live(ai_client=client)
+        self.assertEqual(complete.call_args.kwargs["evidence_ids"], ("opm-text-2026-19222",))
+        prompt = complete.call_args.args[1]
+        self.assertIn("federal employment process", prompt)
+        self.assertIn("employer's policy", prompt)
+        self.assertEqual(result["ai_verification_status"], "AI CANDIDATE (unwitnessed)")
+        self.assertEqual(result["ai_output"], fake_result["ai_output"])
+        self.assertEqual(result["side_effect_count"], 0)
+
+    def test_rule_text_requires_the_exact_parent_metadata_response_hash(self):
+        source = _metadata_source()
+        text_record = _policy_text_record(source)
+        tampered_data = dict(text_record.data)
+        tampered_data["metadata_response_sha256"] = "0" * 64
+        tampered = replace(text_record, data=tampered_data)
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=tampered),
+        ):
+            result = run_live()
+        self.assertEqual(result["policy_text_status"], "DATA_UNAVAILABLE")
+        self.assertEqual(result["task_result"]["status"], "PUBLIC_OPM_METADATA_DISCOVERY_ONLY")
+        self.assertIsNone(result["task_result"]["selected_document"])
+        self.assertFalse(result["ai_invoked"])
+
+    def test_live_rule_text_failure_does_not_replace_it_with_metadata_or_fixtures(self):
+        source = _metadata_source()
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", side_effect=DataUnavailable("HTTP 403")),
+            patch.object(FixtureAdapter, "load", side_effect=AssertionError("live failure used a fixture")),
+        ):
+            result = run_live()
+        self.assertEqual(result["source_status"], "VERIFIED_SOURCE")
+        self.assertEqual(result["policy_text_status"], "DATA_UNAVAILABLE")
+        self.assertIn("HTTP 403", result["policy_text_failure"]["reason"])
+        self.assertEqual(result["task_result"]["status"], "PUBLIC_OPM_METADATA_DISCOVERY_ONLY")
+        self.assertIsNone(result["task_result"]["selected_document"])
+        self.assertFalse(result["ai_invoked"])
+        self.assertEqual(result["side_effect_count"], 0)
 
     def test_public_document_projection_omits_untrusted_title_and_keeps_provenance(self):
         record = SourceRecord(
             provider=Provider.FEDERAL_REGISTER_OPM.value,
             source_id="2026-19222",
-            source_url="https://www.federalregister.gov/documents/2026/09/18/2026-19222/test",
+            source_url=(
+                "https://www.federalregister.gov/documents/2026/09/18/"
+                f"2026-19222/{_PII_SLUG}"
+            ),
             response_status=200,
             response_sha256="a" * 64,
             request_body_sha256=None,
@@ -156,8 +338,19 @@ class OnboardPathTests(unittest.TestCase):
         self.assertEqual(document["source_id"], record.source_id)
         self.assertEqual(document["as_of"], record.as_of)
         self.assertEqual(document["retrieved_at_utc"], record.retrieved_at_utc)
-        self.assertEqual(document["source_url"], record.source_url)
+        self.assertNotIn(_PII_SLUG, exposed)
+        self.assertEqual(document["source_url"], _CANONICAL_DOCUMENT_URL)
         self.assertEqual(document["terms"], record.terms_url)
+
+        bad_urls = (
+            "https://evil.invalid/documents/2026/09/18/2026-19222",
+            "https://avery@www.federalregister.gov/documents/2026/09/18/2026-19222",
+            f"{_CANONICAL_DOCUMENT_URL}?person={_PII_SLUG}",
+            f"{_CANONICAL_DOCUMENT_URL}#{_PII_SLUG}",
+        )
+        for url in bad_urls:
+            with self.subTest(url=url), self.assertRaises(DataUnavailable):
+                _public_document(replace(record, source_url=url))
 
     def test_adversarial_stub_transport_denials_timeout_and_invalid_schema_do_not_fallback(self):
         cases = (

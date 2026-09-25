@@ -33,6 +33,7 @@ SNAPSHOT_FOR_APP = {
     "pipelinerelay": "github_pytest.json",
     "handoffhub": "opm_public_records.json",
     "onboardpath": "opm_public_records.json",
+    "replycraft": "replycraft_public_policy.json",
 }
 SNAPSHOT_SHA256 = {
     "treasury_dts.json": "84be02ba4a1425a679dbe717379af3f2f0cc70a2f8bc1ac238dbaa0a72b427b6",
@@ -41,9 +42,10 @@ SNAPSHOT_SHA256 = {
     "github_pytest.json": "8314b777e4bb801e798b1a8418c6251359ae5dc1d0e5b009b939328e1e2ba631",
     "opm_public_records.json": "e1cfaec43d5809292793074be7e51f27b5339a2dbfda01ad24e3308734a1fe46",
     "own_portfolio.json": "03f536c35ad0ac0ff0aa98bf40120d65cde1eef106762654672b447132e5e342",
+    "replycraft_public_policy.json": "c9f85b20a1494f36baed85803ed3783622631037b58156c930ed58cf06abb680",
 }
 ADAPTER_APPS = frozenset(SNAPSHOT_FOR_APP)
-NO_ADMITTED_SOURCE_APPS = frozenset({"chainwatch", "replycraft"})
+NO_ADMITTED_SOURCE_APPS = frozenset({"chainwatch"})
 PII_NAME = "Avery Morgan"
 PII_ADDRESS = "19 Example Road"
 PII_TEXT = f"{PII_NAME}, {PII_ADDRESS}"
@@ -117,6 +119,25 @@ def _source_from_metadata(snapshot: dict[str, Any]) -> SourceResult:
         task_fit=source["task_fit"],
         records=records,
         read_only=source["read_only"],
+    )
+
+
+def _replycraft_text() -> SourceRecord:
+    text = _captured_receipt("replycraft")["text"]
+    return SourceRecord(
+        provider=text["provider"],
+        source_id=text["source_id"],
+        source_url=text["source_url"],
+        response_status=text["response_status"],
+        response_sha256=text["response_sha256"],
+        request_body_sha256=text["request_body_sha256"],
+        as_of=text["as_of"],
+        as_of_precision=text["as_of_precision"],
+        retrieved_at_utc=text["retrieved_at_utc"],
+        terms_url=text["terms_url"],
+        read_only=text["read_only"],
+        task_fit=text["task_fit"],
+        data=text["data"],
     )
 
 
@@ -239,6 +260,8 @@ def _pinned_source(slug: str) -> SourceResult:
         return _source_from_metadata(receipt)
     if slug in {"handoffhub", "onboardpath"}:
         return _opm_source(receipt)
+    if slug == "replycraft":
+        return _source_from_metadata(receipt)
     if slug == "sentineldesk":
         return _cisa_source(receipt)
     if slug == "pipelinerelay":
@@ -380,6 +403,7 @@ def test_runner_cli_calls_each_real_run_live_with_pinned_public_records(
     """The normal runner route uses real apps, never demos; all jobs remain UNVERIFIED."""
     called_live: list[str] = []
     called_adapters: dict[str, int] = {}
+    called_text_adapters: list[str] = []
 
     for slug in APP_SLUGS:
         module = importlib.import_module(f"apps.{slug}.flow")
@@ -396,6 +420,12 @@ def test_runner_cli_calls_each_real_run_live_with_pinned_public_records(
                 return _pinned_source(_slug)
 
             monkeypatch.setattr(module, "fetch_live", captured_adapter)
+        if slug == "replycraft":
+            def captured_policy_text(record: SourceRecord) -> SourceRecord:
+                called_text_adapters.append(record.source_id)
+                return _replycraft_text()
+
+            monkeypatch.setattr(module, "fetch_govinfo_opm_text", captured_policy_text)
 
     output_dir = tmp_path / "runner-receipts"
     exit_code = run_all.main(["--out-dir", str(output_dir)])
@@ -406,6 +436,7 @@ def test_runner_cli_calls_each_real_run_live_with_pinned_public_records(
     assert "JSON receipts emitted: 10" in printed
     assert called_live == list(APP_SLUGS)
     assert called_adapters == {slug: 1 for slug in APP_SLUGS if slug not in NO_ADMITTED_SOURCE_APPS}
+    assert called_text_adapters == ["2026-19222"]
     assert model_call_guard == []
 
     receipts = {
@@ -422,6 +453,14 @@ def test_runner_cli_calls_each_real_run_live_with_pinned_public_records(
         handoff = receipt.get("handoff")
         assert isinstance(handoff, dict) and handoff.get("owner") and handoff.get("next_action"), slug
         assert "CANARY" not in json.dumps(receipt, sort_keys=True).upper()
+
+    replycraft = receipts["replycraft"]
+    assert replycraft["source_status"] == "VERIFIED_SOURCE"
+    assert replycraft["workflow_status"] == "UNVERIFIED"
+    assert replycraft["result"]["sample_only"] is True
+    assert replycraft["result"]["customer_case"] is False
+    assert replycraft["result"]["citations"] == ["2026-19222#DATES"]
+    assert replycraft["send_attempted"] is False
 
     for slug in ADAPTER_APPS - {"searchlift"}:
         receipt = receipts[slug]

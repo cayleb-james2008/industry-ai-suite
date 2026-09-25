@@ -20,7 +20,16 @@ from .grounding import (
     PromptSentinel,
     UnsafeModelOutput,
 )
-from .model import LocalOpenAIClient, ModelResult, ModelStatus, ModelUnavailable, NonAIFallback
+from .model import (
+    LocalOpenAIClient,
+    ModelResult,
+    ModelStatus,
+    ModelUnavailable,
+    NonAIFallback,
+    OpenAICompatibleClient,
+    ai_configuration_status,
+    configured_ai_client,
+)
 from .privacy import redact
 from .security import AccessDenied, AccessPolicy, Authenticator, Principal, SecurityCore
 from .tokens import HMACTokenCodec, TokenError
@@ -46,6 +55,7 @@ __all__ = [
     "ModelStatus",
     "ModelUnavailable",
     "NonAIFallback",
+    "OpenAICompatibleClient",
     "Principal",
     "PromptInjectionError",
     "PromptSentinel",
@@ -59,5 +69,7 @@ __all__ = [
     "UnverifiedSource",
     "UnsafeModelOutput",
     "fetch_live",
+    "ai_configuration_status",
+    "configured_ai_client",
     "redact",
 ]

@@ -28,7 +28,7 @@ from apps.searchlift.flow import (
 )
 
 REAL_SNAPSHOT = Path(__file__).with_name("real_portfolio_snapshot.json")
-REAL_SNAPSHOT_SHA256 = "cec4bb9ab73cf125387532141e012433a23866491fa3750c9ddf626ac3b4fcbe"
+REAL_SNAPSHOT_SHA256 = "cb6210023eed00d921a049dc36b0cb82cf6c814b637156f3a49de16fcaca65bc"
 
 
 class SearchLiftFlowTests(unittest.TestCase):
@@ -141,7 +141,7 @@ class SearchLiftFlowTests(unittest.TestCase):
         self.assertEqual(snapshot["snapshot_kind"], "sanitized-real-source-structural-projection")
         self.assertEqual(source["source_url"], "https://agentic-resume-nine.vercel.app/")
         self.assertEqual(source["as_of"], "2026-09-22T12:49:24Z")
-        self.assertEqual(source["retrieved_at_utc"], "2026-09-23T15:35:13Z")
+        self.assertEqual(source["retrieved_at_utc"], "2026-09-24T09:53:27Z")
         self.assertEqual(source["terms_url"], "https://api.github.com/licenses/mit")
         self.assertEqual(source["response_status"], 200)
         self.assertIsNone(source["request_body_sha256"])
