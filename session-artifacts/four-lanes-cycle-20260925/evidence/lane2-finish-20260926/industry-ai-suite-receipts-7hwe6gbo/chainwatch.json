@@ -1,0 +1,43 @@
+{
+  "adapter": "Source unavailable; no chain request, signing, or transfer capability",
+  "ai_evidence": null,
+  "ai_invoked": false,
+  "ai_status": "NOT RUN / NO ADMITTED SOURCE",
+  "ai_verification_basis": "No app-reported AI call exists; AI execution remains unverified.",
+  "ai_verification_status": "UNVERIFIED",
+  "app_reported_status": "UNVERIFIED",
+  "app_slug": "chainwatch",
+  "capabilities": [
+    "read_only_source_unavailable"
+  ],
+  "evidence": [],
+  "evidence_ids": [],
+  "handoff": {
+    "next_action": "Make the exact public API terms readable and verify any company watch address before enabling live monitoring.",
+    "owner": "treasury-operator"
+  },
+  "human_handoff": {
+    "next_action": "Make the exact public API terms readable and verify any company watch address before enabling live monitoring.",
+    "owner": "treasury-operator"
+  },
+  "integration_adapter": "Source unavailable; no chain request, signing, or transfer capability",
+  "model_route_probe": {
+    "available": false,
+    "models": [],
+    "reason": "no --ai-url supplied",
+    "route": null
+  },
+  "project": "ChainWatch",
+  "reason": "Mempool REST endpoints were reachable, but its terms route returned only a JavaScript shell; no chain source is admitted. The published My First Bitcoin donation address is not an authorized Cayleb/company address.",
+  "result": null,
+  "risk": "No chain exposure, anomaly, or company treasury claim is reported.",
+  "side_effect_count": 0,
+  "source_hash": null,
+  "source_records": [],
+  "source_status": "UNVERIFIED",
+  "status": "UNVERIFIED",
+  "task_result": null,
+  "uncertainty": "Source-owner terms remain unverified; the app makes no chain request. Public organization context does not establish Cayleb/company ownership or exposure.",
+  "workflow_reason": "Mempool REST endpoints were reachable, but its terms route returned only a JavaScript shell; no chain source is admitted. The published My First Bitcoin donation address is not an authorized Cayleb/company address.",
+  "workflow_status": "UNVERIFIED"
+}

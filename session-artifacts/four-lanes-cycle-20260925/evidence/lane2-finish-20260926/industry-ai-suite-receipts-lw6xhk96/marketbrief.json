@@ -1,0 +1,694 @@
+{
+  "adapter": "suite_core.fetch_live / Provider.WORLD_BANK_USA_GDP (fixed read-only GET)",
+  "ai_availability": "AI: unavailable (UNVERIFIED)",
+  "ai_completion_verdict": "UNVERIFIED",
+  "ai_evidence": null,
+  "ai_failure": null,
+  "ai_handoff": "Local AI was not invoked (no local model client [REDACTED]). Review approved evidence manually: USA:NY.GDP.MKTP.CD:2024, USA:NY.GDP.MKTP.CD:2025.",
+  "ai_invoked": false,
+  "ai_output": null,
+  "ai_status": "NON-AI / DETERMINISTIC FALLBACK",
+  "ai_summary": "Local AI was not invoked (no local model client [REDACTED]). Review approved evidence manually: USA:NY.GDP.MKTP.CD:2024, USA:NY.GDP.MKTP.CD:2025.",
+  "ai_verification_basis": "The app reports a deterministic fallback; this is not evidence of AI execution.",
+  "ai_verification_status": "NON-AI / DETERMINISTIC FALLBACK",
+  "app_reported_status": null,
+  "app_slug": "marketbrief",
+  "data_status": "AVAILABLE",
+  "evidence": [],
+  "handoff": {
+    "next_action": "Review each cited source year and add independently sourced company, valuation, and market evidence before presenting full company research.",
+    "owner": "macro-research-analyst",
+    "owner_type": "role, not an assigned person"
+  },
+  "human_handoff": {
+    "next_action": "Review each cited source year and add independently sourced company, valuation, and market evidence before presenting full company research.",
+    "owner": "macro-research-analyst",
+    "owner_type": "role, not an assigned person"
+  },
+  "integration_adapter": "suite_core.fetch_live / Provider.WORLD_BANK_USA_GDP (fixed read-only GET)",
+  "job_verdict": "UNVERIFIED",
+  "model_route_probe": {
+    "available": false,
+    "models": [],
+    "reason": "no --ai-url supplied",
+    "route": null
+  },
+  "project": "MarketBrief",
+  "result": {
+    "annual_observations": [
+      {
+        "as_of": "2011",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2011]",
+        "gdp_current_usd": "15599732000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2011",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2011
+      },
+      {
+        "as_of": "2012",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2012]",
+        "gdp_current_usd": "16253970000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2012",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2012
+      },
+      {
+        "as_of": "2013",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2013]",
+        "gdp_current_usd": "16880683000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2013",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2013
+      },
+      {
+        "as_of": "2014",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2014]",
+        "gdp_current_usd": "17608138000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2014",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2014
+      },
+      {
+        "as_of": "2015",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2015]",
+        "gdp_current_usd": "18295019000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2015",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2015
+      },
+      {
+        "as_of": "2016",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2016]",
+        "gdp_current_usd": "18804913000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2016",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2016
+      },
+      {
+        "as_of": "2017",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2017]",
+        "gdp_current_usd": "19612102000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2017",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2017
+      },
+      {
+        "as_of": "2018",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2018]",
+        "gdp_current_usd": "20656516000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2018",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2018
+      },
+      {
+        "as_of": "2019",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2019]",
+        "gdp_current_usd": "21539982000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2019",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2019
+      },
+      {
+        "as_of": "2020",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2020]",
+        "gdp_current_usd": "21375281000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2020",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2020
+      },
+      {
+        "as_of": "2021",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2021]",
+        "gdp_current_usd": "23725645000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2021",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2021
+      },
+      {
+        "as_of": "2022",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2022]",
+        "gdp_current_usd": "26054614000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2022",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2022
+      },
+      {
+        "as_of": "2023",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2023]",
+        "gdp_current_usd": "27811517000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2023",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2023
+      },
+      {
+        "as_of": "2024",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2024]",
+        "gdp_current_usd": "29298013000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2024",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2024
+      },
+      {
+        "as_of": "2025",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2025]",
+        "gdp_current_usd": "30769700000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2025",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2025
+      }
+    ],
+    "indicator": "NY.GDP.MKTP.CD \u2014 GDP (current US$)",
+    "label": "PUBLIC_MACRO_SLICE \u2014 not full company or securities research",
+    "latest_nominal_change": {
+      "change_current_usd": "1471687000000",
+      "change_percent": "5.02",
+      "citations": [
+        "[evidence:USA:NY.GDP.MKTP.CD:2024]",
+        "[evidence:USA:NY.GDP.MKTP.CD:2025]"
+      ],
+      "from_year": 2024,
+      "to_year": 2025
+    },
+    "record_count": 15
+  },
+  "risk": "Do not infer a stock price, investment performance, or trading edge from GDP levels or nominal growth.",
+  "side_effect_count": 0,
+  "source_hash": null,
+  "source_ids": [
+    "USA:NY.GDP.MKTP.CD:2011",
+    "USA:NY.GDP.MKTP.CD:2012",
+    "USA:NY.GDP.MKTP.CD:2013",
+    "USA:NY.GDP.MKTP.CD:2014",
+    "USA:NY.GDP.MKTP.CD:2015",
+    "USA:NY.GDP.MKTP.CD:2016",
+    "USA:NY.GDP.MKTP.CD:2017",
+    "USA:NY.GDP.MKTP.CD:2018",
+    "USA:NY.GDP.MKTP.CD:2019",
+    "USA:NY.GDP.MKTP.CD:2020",
+    "USA:NY.GDP.MKTP.CD:2021",
+    "USA:NY.GDP.MKTP.CD:2022",
+    "USA:NY.GDP.MKTP.CD:2023",
+    "USA:NY.GDP.MKTP.CD:2024",
+    "USA:NY.GDP.MKTP.CD:2025"
+  ],
+  "source_metadata": {
+    "provider": "world_bank_usa_gdp",
+    "read_only": true,
+    "records": [
+      {
+        "as_of": "2025",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2025",
+          "value": 30769700000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2025",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2024",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2024",
+          "value": 29298013000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2024",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2023",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2023",
+          "value": 27811517000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2023",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2022",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2022",
+          "value": 26054614000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2022",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2021",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2021",
+          "value": 23725645000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2021",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2020",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2020",
+          "value": 21375281000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2020",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2019",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2019",
+          "value": 21539982000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2019",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2018",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2018",
+          "value": 20656516000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2018",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2017",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2017",
+          "value": 19612102000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2017",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2016",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2016",
+          "value": 18804913000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2016",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2015",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2015",
+          "value": 18295019000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2015",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2014",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2014",
+          "value": 17608138000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2014",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2013",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2013",
+          "value": 16880683000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2013",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2012",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2012",
+          "value": 16253970000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2012",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      },
+      {
+        "as_of": "2011",
+        "as_of_precision": "year",
+        "data": {
+          "countryiso3code": "USA",
+          "date": "2011",
+          "value": 15599732000000
+        },
+        "provider": "world_bank_usa_gdp",
+        "read_only": true,
+        "request_body_sha256": null,
+        "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+        "response_status": 200,
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2011",
+        "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+        "task_fit": "public_us_annual_gdp",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+      }
+    ],
+    "request_body_sha256": null,
+    "request_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&per_page=15",
+    "response_sha256": "2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3",
+    "response_status": 200,
+    "retrieved_at_utc": "2026-09-26T12:21:48Z",
+    "status": "VERIFIED_SOURCE",
+    "task_fit": "public_us_annual_gdp"
+  },
+  "source_status": "VERIFIED_SOURCE",
+  "status": "UNVERIFIED",
+  "task_result": {
+    "annual_observations": [
+      {
+        "as_of": "2011",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2011]",
+        "gdp_current_usd": "15599732000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2011",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2011
+      },
+      {
+        "as_of": "2012",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2012]",
+        "gdp_current_usd": "16253970000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2012",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2012
+      },
+      {
+        "as_of": "2013",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2013]",
+        "gdp_current_usd": "16880683000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2013",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2013
+      },
+      {
+        "as_of": "2014",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2014]",
+        "gdp_current_usd": "17608138000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2014",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2014
+      },
+      {
+        "as_of": "2015",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2015]",
+        "gdp_current_usd": "18295019000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2015",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2015
+      },
+      {
+        "as_of": "2016",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2016]",
+        "gdp_current_usd": "18804913000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2016",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2016
+      },
+      {
+        "as_of": "2017",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2017]",
+        "gdp_current_usd": "19612102000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2017",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2017
+      },
+      {
+        "as_of": "2018",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2018]",
+        "gdp_current_usd": "20656516000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2018",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2018
+      },
+      {
+        "as_of": "2019",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2019]",
+        "gdp_current_usd": "21539982000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2019",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2019
+      },
+      {
+        "as_of": "2020",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2020]",
+        "gdp_current_usd": "21375281000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2020",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2020
+      },
+      {
+        "as_of": "2021",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2021]",
+        "gdp_current_usd": "23725645000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2021",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2021
+      },
+      {
+        "as_of": "2022",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2022]",
+        "gdp_current_usd": "26054614000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2022",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2022
+      },
+      {
+        "as_of": "2023",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2023]",
+        "gdp_current_usd": "27811517000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2023",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2023
+      },
+      {
+        "as_of": "2024",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2024]",
+        "gdp_current_usd": "29298013000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2024",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2024
+      },
+      {
+        "as_of": "2025",
+        "as_of_precision": "year",
+        "citation": "[evidence:USA:NY.GDP.MKTP.CD:2025]",
+        "gdp_current_usd": "30769700000000",
+        "retrieved_at_utc": "2026-09-26T12:21:48Z",
+        "source_id": "USA:NY.GDP.MKTP.CD:2025",
+        "terms_url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD",
+        "year": 2025
+      }
+    ],
+    "indicator": "NY.GDP.MKTP.CD \u2014 GDP (current US$)",
+    "label": "PUBLIC_MACRO_SLICE \u2014 not full company or securities research",
+    "latest_nominal_change": {
+      "change_current_usd": "1471687000000",
+      "change_percent": "5.02",
+      "citations": [
+        "[evidence:USA:NY.GDP.MKTP.CD:2024]",
+        "[evidence:USA:NY.GDP.MKTP.CD:2025]"
+      ],
+      "from_year": 2024,
+      "to_year": 2025
+    },
+    "record_count": 15
+  },
+  "uncertainty": "This 15-year nominal GDP series is broad U.S. macro context only. It is not inflation-adjusted, does not include company evidence or security prices, and the source as-of year does not establish publication availability. The World Bank license page is cited; a dataset-specific license override was not independently checked here.",
+  "workflow_reason": "This 15-year nominal GDP series is broad U.S. macro context only. It is not inflation-adjusted, does not include company evidence or security prices, and the source as-of year does not establish publication availability. The World Bank license page is cited; a dataset-specific license override was not independently checked here.",
+  "workflow_status": "UNVERIFIED"
+}

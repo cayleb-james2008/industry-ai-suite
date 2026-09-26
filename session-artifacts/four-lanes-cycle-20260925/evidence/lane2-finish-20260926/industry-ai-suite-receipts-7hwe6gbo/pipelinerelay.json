@@ -1,0 +1,185 @@
+{
+  "adapter": {
+    "mode": "selected public GitHub repository metadata plus deterministic identity/license/age checks; no fixture or cached fallback",
+    "network_attempted": true,
+    "network_enabled": true,
+    "outreach_capability": "none",
+    "type": "suite_core.fetch_live"
+  },
+  "ai_evidence": null,
+  "ai_handoff": "A human reviewer can inspect the cited public metadata; no model-generated sales inference is appropriate for this slice.",
+  "ai_invoked": false,
+  "ai_output": null,
+  "ai_status": "NON-AI / DETERMINISTIC FALLBACK",
+  "ai_verification_basis": "The app reports a deterministic fallback; this is not evidence of AI execution.",
+  "ai_verification_status": "NON-AI / DETERMINISTIC FALLBACK",
+  "app_reported_ai_verification_claim_ignored": true,
+  "app_reported_status": "VERIFIED_SOURCE",
+  "app_slug": "pipelinerelay",
+  "evidence": [
+    {
+      "as_of": "2026-09-26T08:31:16Z",
+      "as_of_precision": "second",
+      "evidence_id": "github-repo-37489525",
+      "read_only": true,
+      "response_sha256": "174d0cf65eb7ee6e341e5a490419194227a351086b8dba4822beef514feb2d52",
+      "response_status": 200,
+      "retrieved_at_utc": "2026-09-26T12:22:47Z",
+      "source_id": "37489525",
+      "source_url": "https://api.github.com/repos/pytest-dev/pytest",
+      "task_fit": "public_repository_metadata",
+      "terms_url": "https://api.github.com/licenses/mit"
+    }
+  ],
+  "handoff": {
+    "next_action": "Review the exact returned license terms at https://api.github.com/licenses/mit, confirm the repository metadata is relevant to an explicitly authorized public-research question, and keep the timestamp limitation visible; do not create a lead or initiate contact.",
+    "owner": "public-repository-research-review"
+  },
+  "integration_adapter": {
+    "mode": "selected public GitHub repository metadata plus deterministic identity/license/age checks; no fixture or cached fallback",
+    "network_attempted": true,
+    "network_enabled": true,
+    "outreach_capability": "none",
+    "type": "suite_core.fetch_live"
+  },
+  "model_route_probe": {
+    "available": false,
+    "models": [],
+    "reason": "no --ai-url supplied",
+    "route": null
+  },
+  "project": "PipelineRelay",
+  "result": {
+    "citations": [
+      "github-repo-37489525"
+    ],
+    "human_verification_task": "Review the selected repository identity, default branch, source updated_at, and its exact returned SPDX terms URL; decide whether those public metadata facts fit an explicitly authorized research question. The update timestamp is not proof of current activity. Do not treat this as a lead, CRM/account evidence, consent, or permission to contact anyone.",
+    "metadata": {
+      "default_branch": "main",
+      "full_name": "pytest-dev/pytest",
+      "html_url": "https://github.com/pytest-dev/pytest",
+      "license_spdx_id": "MIT",
+      "license_terms_url": "https://api.github.com/licenses/mit",
+      "repository_id": "37489525",
+      "updated_age_days": 0.160775,
+      "updated_age_seconds": 13891,
+      "updated_at": "2026-09-26T08:31:16Z"
+    },
+    "review_checks": [
+      {
+        "check": "repository_identity",
+        "evidence_ids": [
+          "github-repo-37489525"
+        ],
+        "status": "PASS"
+      },
+      {
+        "check": "reported_license",
+        "evidence_ids": [
+          "github-repo-37489525"
+        ],
+        "spdx_id": "MIT",
+        "status": "PASS",
+        "terms_url": "https://api.github.com/licenses/mit"
+      },
+      {
+        "age_days": 0.160775,
+        "age_seconds": 13891,
+        "as_of": "2026-09-26T08:31:16Z",
+        "check": "source_update_age",
+        "evidence_ids": [
+          "github-repo-37489525"
+        ],
+        "note": "This source-provided metadata timestamp is an observation, not proof of current code contents or activity.",
+        "precision": "second",
+        "status": "OBSERVED"
+      },
+      {
+        "check": "sales_account_and_consent",
+        "note": "Public repository metadata is not CRM, account, lead, customer, or consent evidence.",
+        "status": "UNVERIFIED"
+      }
+    ],
+    "status": "PUBLIC_REPOSITORY_RESEARCH_ONLY",
+    "summary": "GitHub identifies pytest-dev/pytest (repository ID 37489525) as a public repository on branch main; its metadata reports MIT and updated_at 2026-09-26T08:31:16Z (observed age at retrieval: 13891 seconds)."
+  },
+  "risk": [
+    "Do not infer buyer intent, account need, relationship, consent, or outreach permission from public repository metadata."
+  ],
+  "side_effect_count": 0,
+  "source": {
+    "provider": "github_repository",
+    "read_only": true,
+    "request_body_sha256": null,
+    "request_url": "https://api.github.com/repos/pytest-dev/pytest",
+    "response_sha256": "174d0cf65eb7ee6e341e5a490419194227a351086b8dba4822beef514feb2d52",
+    "response_status": 200,
+    "retrieved_at_utc": "2026-09-26T12:22:47Z",
+    "task_fit": "public_repository_metadata",
+    "task_fit_note": "Permitted public repository metadata only; not a CRM, sales-lead, consent, or customer data source.",
+    "terms_url": "https://api.github.com/licenses/mit"
+  },
+  "source_hash": null,
+  "source_status": "VERIFIED_SOURCE",
+  "status": "UNVERIFIED",
+  "task_result": {
+    "citations": [
+      "github-repo-37489525"
+    ],
+    "human_verification_task": "Review the selected repository identity, default branch, source updated_at, and its exact returned SPDX terms URL; decide whether those public metadata facts fit an explicitly authorized research question. The update timestamp is not proof of current activity. Do not treat this as a lead, CRM/account evidence, consent, or permission to contact anyone.",
+    "metadata": {
+      "default_branch": "main",
+      "full_name": "pytest-dev/pytest",
+      "html_url": "https://github.com/pytest-dev/pytest",
+      "license_spdx_id": "MIT",
+      "license_terms_url": "https://api.github.com/licenses/mit",
+      "repository_id": "37489525",
+      "updated_age_days": 0.160775,
+      "updated_age_seconds": 13891,
+      "updated_at": "2026-09-26T08:31:16Z"
+    },
+    "review_checks": [
+      {
+        "check": "repository_identity",
+        "evidence_ids": [
+          "github-repo-37489525"
+        ],
+        "status": "PASS"
+      },
+      {
+        "check": "reported_license",
+        "evidence_ids": [
+          "github-repo-37489525"
+        ],
+        "spdx_id": "MIT",
+        "status": "PASS",
+        "terms_url": "https://api.github.com/licenses/mit"
+      },
+      {
+        "age_days": 0.160775,
+        "age_seconds": 13891,
+        "as_of": "2026-09-26T08:31:16Z",
+        "check": "source_update_age",
+        "evidence_ids": [
+          "github-repo-37489525"
+        ],
+        "note": "This source-provided metadata timestamp is an observation, not proof of current code contents or activity.",
+        "precision": "second",
+        "status": "OBSERVED"
+      },
+      {
+        "check": "sales_account_and_consent",
+        "note": "Public repository metadata is not CRM, account, lead, customer, or consent evidence.",
+        "status": "UNVERIFIED"
+      }
+    ],
+    "status": "PUBLIC_REPOSITORY_RESEARCH_ONLY",
+    "summary": "GitHub identifies pytest-dev/pytest (repository ID 37489525) as a public repository on branch main; its metadata reports MIT and updated_at 2026-09-26T08:31:16Z (observed age at retrieval: 13891 seconds)."
+  },
+  "uncertainty": [
+    "A public repository is not a private customer or sales account; no CRM records, account consent, user-authored issue text, or contact details were requested.",
+    "Repository metadata does not establish current code contents or recent work beyond its returned timestamp."
+  ],
+  "workflow_reason": "A public repository is not a private customer or sales account; no CRM records, account consent, user-authored issue text, or contact details were requested.; Repository metadata does not establish current code contents or recent work beyond its returned timestamp.",
+  "workflow_status": "UNVERIFIED"
+}

@@ -1,0 +1,22 @@
+test_adversarial_missing_github_license_is_unverified_without_fallback (test_flow.PipelineRelayTests.test_adversarial_missing_github_license_is_unverified_without_fallback) ... ok
+test_adversarial_synthetic_public_repo_metadata_is_not_crm_or_a_lead (test_flow.PipelineRelayTests.test_adversarial_synthetic_public_repo_metadata_is_not_crm_or_a_lead)
+Synthetic repository metadata here is an adversarial regression fixture only. ... ok
+test_adversarial_unavailable_github_never_falls_back_to_fixture_accounts (test_flow.PipelineRelayTests.test_adversarial_unavailable_github_never_falls_back_to_fixture_accounts) ... ok
+test_cli_partial_repository_input_is_rejected_before_request (test_flow.PipelineRelayTests.test_cli_partial_repository_input_is_rejected_before_request) ... ok
+test_consent_context_is_handed_to_a_person_without_outreach (test_flow.PipelineRelayTests.test_consent_context_is_handed_to_a_person_without_outreach) ... ok
+test_custom_repository_and_returned_spdx_terms_are_used (test_flow.PipelineRelayTests.test_custom_repository_and_returned_spdx_terms_are_used) ... ok
+test_default_repository_is_passed_to_the_shared_adapter (test_flow.PipelineRelayTests.test_default_repository_is_passed_to_the_shared_adapter) ... ok
+test_license_spdx_terms_mismatch_fails_closed (test_flow.PipelineRelayTests.test_license_spdx_terms_mismatch_fails_closed) ... ok
+test_missing_or_ambiguous_license_metadata_fails_closed (test_flow.PipelineRelayTests.test_missing_or_ambiguous_license_metadata_fails_closed) ... ok
+test_only_concrete_local_client_is_accepted (test_flow.PipelineRelayTests.test_only_concrete_local_client_is_accepted) ... ok
+test_partial_malformed_and_unsafe_repository_inputs_make_no_request (test_flow.PipelineRelayTests.test_partial_malformed_and_unsafe_repository_inputs_make_no_request) ... ok
+test_prompt_canary_injection_is_refused (test_flow.PipelineRelayTests.test_prompt_canary_injection_is_refused) ... ok
+test_source_repository_identity_mismatch_fails_closed (test_flow.PipelineRelayTests.test_source_repository_identity_mismatch_fails_closed) ... ok
+test_tenant_beta_json_and_csv_are_confined_and_hashed (test_flow.PipelineRelayTests.test_tenant_beta_json_and_csv_are_confined_and_hashed) ... ok
+test_tenant_role_and_forged_claims_are_denied (test_flow.PipelineRelayTests.test_tenant_role_and_forged_claims_are_denied) ... ok
+test_tolerated_future_timestamp_is_reported_as_negative_age (test_flow.PipelineRelayTests.test_tolerated_future_timestamp_is_reported_as_negative_age) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.004s
+
+OK
