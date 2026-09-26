@@ -142,7 +142,7 @@ def correlate_alerts(rows: tuple[dict[str, object], ...]) -> list[dict[str, obje
                 ],
                 "correlation": "same asset; adjacent alerts within a 15-minute window",
             })
-    return sorted(incidents, key=lambda incident: (incident["timeline"][0]["occurred_at"], incident["incident_id"]))
+    return sorted(incidents, key=lambda incident: (_time(str(incident["timeline"][0]["occurred_at"])), incident["incident_id"]))
 
 
 def _model_review(

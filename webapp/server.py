@@ -13,6 +13,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from .runner import SLUGS, run
+from .enterprise.common import strict_json_loads
+from .enterprise.examples import EXAMPLES
 
 STATIC = Path(__file__).with_name("static")
 MAX_BODY = 128 * 1024
@@ -47,12 +49,19 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def _json(self, code: int, data: dict[str, object]) -> None:
-        self._send(code, json.dumps(data, ensure_ascii=False, default=str).encode(), "application/json; charset=utf-8")
+        self._send(code, json.dumps(data, ensure_ascii=False, allow_nan=False).encode(), "application/json; charset=utf-8")
 
     def do_GET(self) -> None:
         path = urlsplit(self.path).path
         if path == "/api/health":
             self._json(200, {"status": "ready", "workflows": list(SLUGS)})
+            return
+        if path.startswith("/api/example/"):
+            slug = path.rsplit("/", 1)[-1]
+            if slug not in SLUGS:
+                self._json(404, {"error": "Example not found."})
+            else:
+                self._json(200, {"bundle": EXAMPLES[slug], "notice": "SYNTHETIC EXAMPLE — engineering only; not a real organization source."})
             return
         asset = ASSETS.get(path)
         if asset is None:
@@ -84,7 +93,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             self._json(413, {"error": "Input is empty or exceeds 128 KB."})
             return
         try:
-            payload = json.loads(self.rfile.read(length))
+            payload = strict_json_loads(self.rfile.read(length))
             result = run(path.rsplit("/", 1)[-1], payload)
         except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
             self._json(400, {"error": str(exc)[:300]})
@@ -92,7 +101,10 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         except Exception:
             self._json(502, {"error": "The source or workflow failed. Check the input and try again; no saved result was substituted."})
             return
-        self._json(200, result)
+        try:
+            self._json(200, result)
+        except (TypeError, ValueError):
+            self._json(502, {"error": "The workflow produced an unsupported result; no receipt was returned."})
 
 
 class WorkbenchServer(ThreadingHTTPServer):

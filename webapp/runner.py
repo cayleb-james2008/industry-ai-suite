@@ -16,6 +16,8 @@ from apps.pipelinerelay.flow import run_live as pipelinerelay
 from apps.replycraft.flow import run_live as replycraft
 from apps.searchlift.flow import run_live as searchlift
 from apps.sentineldesk.flow import run_live as sentineldesk
+from .enterprise import run as run_enterprise
+from .enterprise.common import strict_json_loads
 
 SLUGS = (
     "ledgerbridge", "marketbrief", "chainwatch", "backtestguard",
@@ -58,8 +60,19 @@ def run(slug: str, payload: dict[str, Any]) -> dict[str, object]:
     if not isinstance(payload, dict):
         raise ValueError("Request must be a JSON object.")
     mode = payload.get("mode", "public")
-    if mode not in {"public", "user"}:
+    if mode not in {"public", "user", "enterprise"}:
         raise ValueError("Choose a supported input mode.")
+    if mode == "enterprise":
+        if set(payload) == {"mode", "bundle"}:
+            bundle = payload["bundle"]
+        elif set(payload) == {"mode", "bundle_json"}:
+            raw = payload["bundle_json"]
+            if not isinstance(raw, str) or not raw or len(raw.encode("utf-8")) > 120 * 1024:
+                raise ValueError("Organization JSON must contain 1 to 120 KB of text.")
+            bundle = strict_json_loads(raw)
+        else:
+            raise ValueError("Enterprise requests must contain mode and one bundle input.")
+        return run_enterprise(slug, bundle)
 
     if slug == "ledgerbridge":
         if mode == "public":

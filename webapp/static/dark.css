@@ -114,6 +114,10 @@ a:hover { color: var(--signal-dark); }
 .field input::placeholder, .field textarea::placeholder { color: #A6B6C1; }
 .field input:disabled, .field select:disabled, .field textarea:disabled { opacity: .55; }
 .field input[type=checkbox] { accent-color: #C9E6EF; }
+.enterprise-fields { border-top: 1px solid #52606B; margin-top: 1.25rem; padding-top: .5rem; }
+.enterprise-fields .field textarea { min-height: 240px; }
+.enterprise-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin: .75rem 0; }
+.enterprise-actions .button { min-width: 0; }
 .button {
   border-color: #81939E;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
