@@ -102,20 +102,20 @@ def _ai_summary(ai_client: object, result: dict[str, object], evidence_ids: tupl
 
 
 def run_live(ai_client: object | None = None) -> dict[str, object]:
-    """Fail closed: candidate API terms are not admitted; no chain call is made."""
+    """Fail closed: no permitted EVM observation source is admitted."""
     return {
         "project": "ChainWatch",
         "status": "UNVERIFIED",
-        "source_status": "UNVERIFIED — Mempool API terms could not be read and admitted",
-        "reason": "Mempool REST endpoints were reachable, but its terms route returned only a JavaScript shell; no chain source is admitted. The published My First Bitcoin donation address is not an authorized Cayleb/company address.",
+        "source_status": "UNVERIFIED — no task-fit EVM chain source admitted",
+        "reason": "The reviewed Mempool REST endpoints serve Bitcoin, not ChainWatch's EVM observations; their hosted terms also could not be verified. No EVM chain source is admitted. The published My First Bitcoin donation address is not an authorized Cayleb/company address.",
         "task_result": None,
         "evidence_ids": [],
         "source_records": [],
-        "uncertainty": "Source-owner terms remain unverified; the app makes no chain request. Public organization context does not establish Cayleb/company ownership or exposure.",
+        "uncertainty": "A permitted EVM observation source and authorized address are absent; the app makes no chain request. Public organization context does not establish Cayleb/company ownership or exposure.",
         "risk": "No chain exposure, anomaly, or company treasury claim is reported.",
         "human_handoff": {
             "owner": "treasury-operator",
-            "next_action": "Make the exact public API terms readable and verify any company watch address before enabling live monitoring.",
+            "next_action": "Supply permitted, sampled EVM observations and verify any company watch address before enabling live monitoring.",
         },
         "ai_status": "NOT RUN / NO ADMITTED SOURCE",
         "ai_invoked": False,

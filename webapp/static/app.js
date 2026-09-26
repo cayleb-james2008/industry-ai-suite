@@ -51,7 +51,7 @@ function renderNav(){const nav=$("workflow-nav");nav.replaceChildren();CATALOG.f
 function renderFields(item){const form=$("form-fields");form.replaceChildren();
   if(RECORDED){appendText(form,"p","result-copy","This is a dated, inspectable result from a prior local run. Use the repository's local workbench to fetch fresh public data or review your own authorized input.");$("run-button").textContent="Explore recorded result ↗";return;}
   const routeWrap=el("div","field"),routeLabel=el("label",null,"Review path"),route=el("select");route.id="input-route";routeLabel.htmlFor=route.id;
-  [["current","Current public or local review"],["enterprise","Organization bundle · local only"]].forEach(([value,label])=>{const option=el("option",null,label);option.value=value;route.append(option);});
+  [["current",item.slug==="chainwatch"?"Local watch-only observations":"Fresh public or local review"],["enterprise","Organization bundle · local only"]].forEach(([value,label])=>{const option=el("option",null,label);option.value=value;route.append(option);});
   routeWrap.append(routeLabel,route);form.append(routeWrap);
   const box=el("div","current-fields"),enterprise=el("div","enterprise-fields");enterprise.hidden=true;form.append(box,enterprise);
   const importField=field(enterprise,"enterprise-json","Organization bundle (JSON)","textarea","","Use only a permitted, de-identified export. Load a local JSON file or paste it here. Source authority is not independently verified.");
