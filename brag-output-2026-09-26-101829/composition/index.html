@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>Industry AI Suite — brag</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+  body { margin: 0; background: #F3F6F8; color: #172B3A; font-family: system-ui, sans-serif; }
+  #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  .clip { position: absolute; inset: 0; display: grid; place-items: center; }
+  .inner { width: 100%; height: 100%; position: relative; display: grid; place-items: center; }
+  .bg { position: absolute; inset: 0; background: #F3F6F8; }
+  .bgrule { position: absolute; left: 140px; right: 140px; top: 96px; height: 3px; background: #C5D0D8; }
+  .veil { position: absolute; inset: 0; background: #F3F6F8; opacity: 0; }
+  .intro { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
+  .i1 { font-size: 92px; font-weight: 800; letter-spacing: -1px; }
+  .i2 { font-size: 92px; font-weight: 900; }
+  .grid-wrap { display: grid; grid-template-columns: repeat(2, 430px); gap: 18px 26px; }
+  .gcard { display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; border: 1px solid #C5D0D8; border-radius: 12px; padding: 16px 22px; opacity: 0; }
+  .gname { font-size: 25px; font-weight: 700; color: #172B3A; }
+  .gchip { font-size: 15px; font-weight: 700; letter-spacing: 1px; color: #B6422A; border: 1.5px solid #B6422A; border-radius: 999px; padding: 3px 10px; }
+  .receipt { width: 780px; background: #FFFFFF; border: 1px solid #C5D0D8; border-radius: 14px; padding: 34px 40px 30px; box-shadow: 0 24px 60px rgba(23,43,58,0.10); position: relative; opacity: 0; }
+  .rline { font-family: ui-monospace, monospace; font-size: 22px; color: #172B3A; margin: 10px 0; opacity: 0; }
+  .rline span { color: #4B5D69; }
+  .rstamp { position: absolute; right: 36px; top: 20px; padding: 8px 22px; border: 4px solid #B6422A; border-radius: 10px; color: #B6422A; font-size: 40px; font-weight: 900; letter-spacing: 3px; transform: rotate(-6deg); opacity: 0; }
+  .rcap { text-align: center; font-size: 26px; color: #4B5D69; font-style: italic; margin-top: 22px; opacity: 0; }
+  .term { width: 900px; background: #172B3A; border-radius: 14px; overflow: hidden; box-shadow: 0 24px 60px rgba(23,43,58,0.22); }
+  .term-bar { height: 42px; display: flex; align-items: center; gap: 9px; padding: 0 16px; background: rgba(255,255,255,0.06); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .term-body { padding: 24px 28px 28px; font-family: ui-monospace, monospace; font-size: 25px; line-height: 1.8; color: #E7EEF2; }
+  .tcmd { color: #FFFFFF; }
+  .tout { opacity: 0; }
+  .tout b { color: #B6422A; font-weight: 700; }
+  .punch { position: absolute; left: 0; right: 0; bottom: 120px; text-align: center; font-size: 88px; font-weight: 900; color: #172B3A; opacity: 0; }
+  .outro-l { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
+  .o1 { top: 400px; font-size: 74px; font-weight: 800; }
+  .o2 { top: 520px; font-size: 28px; font-weight: 600; letter-spacing: 8px; color: #4B5D69; text-transform: uppercase; }
+  .orule { position: absolute; left: 50%; top: 610px; width: 460px; height: 4px; margin-left: -230px; border-radius: 2px; background: #B6422A; transform: scaleX(0); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="suite-brag" data-start="0" data-width="1920" data-height="1080" data-duration="21">
+
+  <div class="bg" data-start="0" data-duration="21"><div class="bgrule"></div></div>
+
+  <section id="scene-intro" class="clip" data-start="0" data-duration="3.5">
+    <div class="inner">
+      <div class="intro i1" id="i1">We built ten AI products.</div>
+      <div class="intro i2" id="i2">None of them lie.</div>
+    </div>
+  </section>
+
+  <section id="scene-grid" class="clip" data-start="3.5" data-duration="5">
+    <div class="inner">
+      <div class="grid-wrap">
+        <div class="gcard" id="g0"><span class="gname">LedgerBridge</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g1"><span class="gname">MarketBrief</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g2"><span class="gname">ChainWatch</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g3"><span class="gname">BacktestGuard</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g4"><span class="gname">ReplyCraft</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g5"><span class="gname">HandoffHub</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g6"><span class="gname">SentinelDesk</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g7"><span class="gname">SearchLift</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g8"><span class="gname">PipelineRelay</span><span class="gchip">UNVERIFIED</span></div>
+        <div class="gcard" id="g9"><span class="gname">OnboardPath</span><span class="gchip">UNVERIFIED</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="scene-receipt" class="clip" data-start="8.5" data-duration="4.5">
+    <div class="inner">
+      <div class="receipt" id="receipt">
+        <div class="rline" id="r0">MarketBrief · U.S. GDP</div>
+        <div class="rline" id="r1"><span>source:</span> api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD</div>
+        <div class="rline" id="r2"><span>retrieved:</span> 2026-09-26T12:24:08Z</div>
+        <div class="rline" id="r3"><span>sha256:</span> e48bfc08&#8230;3e62b3f</div>
+        <div class="rstamp" id="rstamp">UNVERIFIED</div>
+        <div class="rcap" id="rcap">the badge it earned by telling the truth.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="scene-exit" class="clip" data-start="13" data-duration="4.5">
+    <div class="inner">
+      <div class="term" id="term">
+        <div class="term-bar">
+          <div class="dot" style="background:#ff6b6b"></div><div class="dot" style="background:#ffd93d"></div><div class="dot" style="background:#6bff8f"></div>
+        </div>
+        <div class="term-body">
+          <div class="tcmd" id="tcmd"></div>
+          <div class="tout" id="t1">Suite status: INCOMPLETE</div>
+          <div class="tout" id="t2">Workflow job statuses: <b>UNVERIFIED=10</b></div>
+          <div class="tout" id="t3">exit code 1</div>
+        </div>
+      </div>
+      <div class="punch" id="punch">on purpose.</div>
+    </div>
+  </section>
+
+  <section id="scene-outro" class="clip" data-start="17.5" data-duration="3.5">
+    <div class="inner">
+      <div class="outro-l o1" id="o1">Every claim ships with a receipt.</div>
+      <div class="outro-l o2" id="o2">Industry AI Suite · honesty as an architecture</div>
+      <div class="orule" id="orule"></div>
+    </div>
+  </section>
+
+  <div class="veil" id="veil" data-start="0" data-duration="21"></div>
+
+  <audio id="bg-music" data-start="0" data-duration="21" data-track-index="10" data-volume="0.26" src="assets/music/happy-beats-business-moves-vol-9-by-ende-dot-app.mp3"></audio>
+  <audio id="sfx-drop-0" data-start="3.9" data-duration="0.11" data-track-index="11" data-volume="0.5" src="assets/sfx/interface/drop_001.ogg"></audio>
+  <audio id="sfx-drop-1" data-start="4.62" data-duration="0.11" data-track-index="12" data-volume="0.46" src="assets/sfx/interface/drop_001.ogg"></audio>
+  <audio id="sfx-drop-2" data-start="5.34" data-duration="0.11" data-track-index="13" data-volume="0.5" src="assets/sfx/interface/drop_001.ogg"></audio>
+  <audio id="sfx-drop-3" data-start="6.06" data-duration="0.11" data-track-index="14" data-volume="0.46" src="assets/sfx/interface/drop_001.ogg"></audio>
+  <audio id="sfx-drop-4" data-start="6.78" data-duration="0.11" data-track-index="15" data-volume="0.5" src="assets/sfx/interface/drop_001.ogg"></audio>
+  <audio id="sfx-stamp" data-start="10.54" data-duration="0.35" data-track-index="16" data-volume="0.72" src="assets/sfx/impact/impactPlate_heavy_001.ogg"></audio>
+  <audio id="sfx-key-1" data-start="13.45" data-duration="0.25" data-track-index="17" data-volume="0.4" src="assets/sfx/keypress-004.wav"></audio>
+  <audio id="sfx-key-2" data-start="13.59" data-duration="0.25" data-track-index="18" data-volume="0.38" src="assets/sfx/keypress-011.wav"></audio>
+  <audio id="sfx-key-3" data-start="13.73" data-duration="0.25" data-track-index="19" data-volume="0.42" src="assets/sfx/keypress-019.wav"></audio>
+  <audio id="sfx-key-4" data-start="13.87" data-duration="0.25" data-track-index="20" data-volume="0.38" src="assets/sfx/keypress-004.wav"></audio>
+  <audio id="sfx-key-5" data-start="14.01" data-duration="0.25" data-track-index="21" data-volume="0.4" src="assets/sfx/keypress-011.wav"></audio>
+  <audio id="sfx-key-6" data-start="14.15" data-duration="0.25" data-track-index="22" data-volume="0.36" src="assets/sfx/keypress-019.wav"></audio>
+  <audio id="sfx-line-1" data-start="14.6" data-duration="0.18" data-track-index="23" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_001.ogg"></audio>
+  <audio id="sfx-line-2" data-start="15.3" data-duration="0.18" data-track-index="24" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_001.ogg"></audio>
+  <audio id="sfx-line-3" data-start="16.0" data-duration="0.18" data-track-index="25" data-volume="0.52" src="assets/sfx/impact/impactSoft_medium_001.ogg"></audio>
+  <audio id="sfx-punch" data-start="16.55" data-duration="0.35" data-track-index="26" data-volume="0.55" src="assets/sfx/impact/impactPlate_heavy_001.ogg"></audio>
+
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+
+/* Scene 1 — deadpan intro */
+tl.fromTo("#i1", { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, 0.35);
+tl.to("#i1", { opacity: 0, y: -22, duration: 0.3, ease: "power2.in" }, 1.95);
+tl.fromTo("#i2", { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, 2.25);
+tl.to("#scene-intro .inner", { opacity: 0, duration: 0.25, ease: "power2.in" }, 3.3);
+
+/* Scene 2 — the ten: quick reveal, full set holds (beat-grid spacing chosen for pacing) */
+for (let i = 0; i < 10; i++) {
+  tl.fromTo("#g" + i, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 3.9 + i * 0.36);
+}
+tl.to("#scene-grid .inner", { opacity: 0, duration: 0.25, ease: "power2.in" }, 8.3);
+
+/* Scene 3 — the receipt. beat-locked: 10.54s (vol-9 strong cue) on the stamp */
+tl.fromTo("#receipt", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 8.8);
+tl.fromTo("#r0", { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 9.2);
+tl.fromTo("#r1", { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 9.8);
+tl.fromTo("#r2", { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 10.3);
+tl.fromTo("#r3", { x: -14, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 10.42);
+tl.fromTo("#rstamp", { scale: 2.1, opacity: 0, rotation: -14 }, { scale: 1, opacity: 1, rotation: -6, duration: 0.32, ease: "power4.in" }, 10.54);
+tl.fromTo("#rcap", { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 11.5);
+tl.to("#scene-receipt .inner", { opacity: 0, duration: 0.25, ease: "power2.in" }, 12.85);
+
+/* Scene 4 — exit code 1 (punchline: natural timing, no nearby strong cue) */
+(function () {
+  const cmd = "python3 scripts/run_all.py";
+  for (let i = 0; i < cmd.length; i++) {
+    tl.set("#tcmd", { textContent: cmd.slice(0, i + 1) }, 13.45 + i * 0.045);
+  }
+})();
+tl.fromTo("#term", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power3.out" }, 13.2);
+tl.fromTo("#t1", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.28, ease: "power2.out" }, 14.6);
+tl.fromTo("#t2", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.28, ease: "power2.out" }, 15.3);
+tl.fromTo("#t3", { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.28, ease: "power2.out" }, 16.0);
+tl.fromTo("#punch", { scale: 1.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "power4.out" }, 16.55);
+tl.to("#scene-exit .inner", { opacity: 0, duration: 0.25, ease: "power2.in" }, 17.35);
+
+/* Scene 5 — outro */
+tl.fromTo("#o1", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, 17.8);
+tl.fromTo("#o2", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 18.8);
+tl.to("#orule", { scaleX: 1, duration: 0.5, ease: "power3.inOut" }, 19.2);
+tl.to("#veil", { opacity: 1, duration: 0.55, ease: "power2.in" }, 20.4);
+
+window.__timelines["suite-brag"] = tl;
+</script>
+</body>
+</html>

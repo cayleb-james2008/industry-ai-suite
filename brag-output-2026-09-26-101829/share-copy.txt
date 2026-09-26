@@ -1,0 +1,2 @@
+We built ten AI products. None of them lie.
+Every claim in the Industry AI Suite ships with a receipt - source URL, timestamp, SHA-256 - and an honest UNVERIFIED badge when it has not earned a checkmark. Exit code 1 while incomplete. On purpose.
