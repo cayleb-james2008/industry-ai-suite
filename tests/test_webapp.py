@@ -3,15 +3,29 @@
 import json
 import threading
 import unittest
+from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
+from scripts import run_all
 from scripts.export_public_lab import _receipt
 from webapp.runner import run
 from webapp.server import WorkbenchServer
 
 
 class WorkbenchInputTests(unittest.TestCase):
+    def test_configured_model_does_not_break_deterministic_public_paths(self):
+        for slug in ("replycraft", "handoffhub"):
+            with self.subTest(slug=slug):
+                with patch(f"apps.{slug}.flow.run_live", return_value={
+                    "status": "UNVERIFIED", "source_status": "VERIFIED_SOURCE",
+                    "task_result": {"document_id": "public-sample"},
+                    "ai_status": "NOT REQUESTED", "ai_invoked": False,
+                }) as live:
+                    receipt = run_all._run_one(slug, ai_client=object())
+                live.assert_called_once_with(ai_client=None)
+                self.assertEqual(receipt["source_status"], "VERIFIED_SOURCE")
+
     def test_public_ai_label_requires_matching_grounded_witness_record(self):
         source = {
             "app_slug": "marketbrief", "task_result": {"record_count": 1},

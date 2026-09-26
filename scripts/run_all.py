@@ -26,6 +26,10 @@ APP_SLUGS = (
     "pipelinerelay",
     "onboardpath",
 )
+# Their no-import public paths are deliberately deterministic. In particular,
+# the configured provider client is not a customer-case or internal-document
+# source and must not make these public source reads fail type admission.
+PUBLIC_DETERMINISTIC_SLUGS = frozenset({"replycraft", "handoffhub"})
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -150,7 +154,7 @@ def _run_one(
                 slug, "UNVERIFIED",
                 f"Live workflow unavailable: {module_name}.run_live is missing or not callable; no demo or fixture fallback was attempted.",
             )
-        value = run_live(ai_client=ai_client)
+        value = run_live(ai_client=None if slug in PUBLIC_DETERMINISTIC_SLUGS else ai_client)
         if not isinstance(value, dict):
             return _failure_receipt(
                 slug, "UNVERIFIED",
