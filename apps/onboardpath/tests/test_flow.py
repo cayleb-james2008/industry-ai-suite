@@ -58,11 +58,11 @@ def _metadata_source(html_url="https://www.federalregister.gov/documents/2026/09
     )
 
 
-def _policy_text_record(source: SourceResult) -> SourceRecord:
-    metadata = source.records[0]
+def _policy_text_record(source: SourceResult, metadata: SourceRecord | None = None) -> SourceRecord:
+    metadata = metadata or source.records[0]
     return SourceRecord(
         provider=metadata.provider, source_id=metadata.source_id,
-        source_url="https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+        source_url=live_sources.govinfo_opm_url(metadata),
         response_status=200,
         response_sha256="c" * 64, request_body_sha256=None,
         as_of=metadata.as_of, as_of_precision="day",
@@ -169,6 +169,7 @@ class OnboardPathTests(unittest.TestCase):
         self.assertFalse(result["task_result"]["employee_records_loaded"])
         self.assertEqual(doc["document_number"], "2026-19222")
         self.assertEqual(doc["as_of"], doc["publication_date"])
+        self.assertEqual(doc["response_status"], source.records[0].response_status)
         self.assertTrue(doc["retrieved_at_utc"].endswith("Z"))
         self.assertIn("federalregister.gov/reader-aids", doc["terms"])
         self.assertTrue(doc["read_only"])
@@ -177,6 +178,16 @@ class OnboardPathTests(unittest.TestCase):
         selected = result["task_result"]["selected_document"]
         self.assertEqual(selected["citations"], ["opm-text-2026-19222"])
         self.assertIn("federal employment process", selected["text_excerpt"])
+        self.assertEqual(selected["source_id"], "2026-19222")
+        self.assertEqual(selected["metadata_response_status"], source.records[0].response_status)
+        self.assertEqual(selected["metadata_response_sha256"], source.response_sha256)
+        self.assertEqual(selected["text_response_sha256"], text_record.response_sha256)
+        self.assertEqual(selected["text_retrieved_at_utc"], text_record.retrieved_at_utc)
+        self.assertEqual(selected["text_terms_url"], text_record.terms_url)
+        self.assertEqual(selected["sections"], [{
+            "label": "DATES", "text": "Comments close on November 17, 2026.",
+            "citation": "opm-text-2026-19222#DATES",
+        }])
         self.assertEqual(result["evidence"][-1]["task_fit"], "public_opm_policy_text")
         self.assertTrue(result["evidence"][-1]["source_url"].startswith("https://www.govinfo.gov/content/pkg/FR-"))
         self.assertIn("govinfo.gov/about/policies", result["evidence"][-1]["terms_url"])
@@ -184,6 +195,133 @@ class OnboardPathTests(unittest.TestCase):
         self.assertEqual(result["side_effect_count"], 0)
         self.assertFalse(result["ai_completion_claim"])
         self.assertFalse(result["ai_invoked"])
+
+    def test_document_number_selects_exactly_one_rule_from_fresh_metadata(self):
+        source = _metadata_source()
+        first = source.records[0]
+        second_number = "2026-19223"
+        second_url = "https://www.federalregister.gov/documents/2026/09/18/2026-19223/another-rule"
+        second = replace(
+            first,
+            source_id=second_number,
+            source_url=second_url,
+            data={**first.data, "document_number": second_number, "html_url": second_url},
+        )
+        source = replace(source, records=(first, second))
+        text_record = _policy_text_record(source, second)
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record) as fetch_text,
+        ):
+            result = run_live(document_number=second_number)
+        fetch_text.assert_called_once_with(second)
+        selected = result["task_result"]["selected_document"]
+        self.assertEqual(selected["document_number"], second_number)
+        self.assertEqual(selected["publication_date"], "2026-09-18")
+        self.assertEqual(selected["metadata_response_sha256"], source.response_sha256)
+        self.assertEqual(result["evidence"][-1]["response_sha256"], text_record.response_sha256)
+        self.assertEqual(result["evidence"][-1]["retrieved_at_utc"], text_record.retrieved_at_utc)
+        self.assertEqual(selected["sections"][0]["citation"], f"opm-text-{second_number}#DATES")
+        self.assertIsNone(result["task_result"]["answer"])
+        self.assertFalse(result["task_result"]["employee_records_loaded"])
+        self.assertEqual(result["status"], "UNVERIFIED")
+
+    def test_malformed_or_unmatched_document_does_not_request_govinfo_text(self):
+        with (
+            patch("apps.onboardpath.flow.fetch_live") as fetch_metadata,
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text") as fetch_text,
+        ):
+            malformed = run_live(document_number="2026-19222/private")
+        fetch_metadata.assert_not_called()
+        fetch_text.assert_not_called()
+        self.assertEqual(malformed["status"], "UNVERIFIED")
+        self.assertEqual(malformed["task_result"]["status"], "PUBLIC_OPM_DOCUMENT_NOT_FOUND")
+        self.assertIn("malformed", malformed["uncertainty"][0])
+        self.assertIn("no GovInfo text request was made", malformed["handoff"]["next_action"])
+
+        source = _metadata_source()
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text") as fetch_text,
+            patch.object(FixtureAdapter, "load", side_effect=AssertionError("no-match path used a fixture")),
+        ):
+            unmatched = run_live(document_number="2026-99999")
+        fetch_text.assert_not_called()
+        self.assertEqual(unmatched["source_status"], "VERIFIED_SOURCE")
+        self.assertEqual(unmatched["policy_text_status"], "UNVERIFIED")
+        self.assertEqual(unmatched["task_result"]["status"], "PUBLIC_OPM_DOCUMENT_NOT_FOUND")
+        self.assertIsNone(unmatched["task_result"]["selected_document"])
+        self.assertIsNone(unmatched["task_result"]["answer"])
+        self.assertFalse(unmatched["task_result"]["employee_records_loaded"])
+        self.assertEqual(len(unmatched["task_result"]["documents"]), len(source.records))
+        self.assertIn("2026-99999", unmatched["uncertainty"][2])
+
+    def test_govinfo_identity_mismatch_is_not_exposed_as_selected_text(self):
+        source = _metadata_source()
+        text_record = _policy_text_record(source)
+        mismatched = replace(text_record, source_id="2026-19999")
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=mismatched),
+        ):
+            result = run_live(document_number="2026-19222")
+        self.assertEqual(result["policy_text_status"], "DATA_UNAVAILABLE")
+        self.assertEqual(result["task_result"]["status"], "PUBLIC_OPM_METADATA_DISCOVERY_ONLY")
+        self.assertIsNone(result["task_result"]["selected_document"])
+        self.assertIsNone(result["task_result"]["answer"])
+
+    def test_section_output_is_bounded_and_citations_are_stable(self):
+        source = _metadata_source()
+        metadata = source.records[0]
+        text_record = _policy_text_record(source)
+        sections = {
+            label: [f"{label} public text {number}." for number in range(2)]
+            for label in ("SUMMARY", "DATES", "ADDRESSES", "SUPPLEMENTARY INFORMATION")
+        }
+        text_record = replace(text_record, data={**text_record.data, "sections": sections})
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+        ):
+            result = run_live(document_number=metadata.source_id)
+        selected = result["task_result"]["selected_document"]
+        exposed_sections = selected["sections"]
+        self.assertLessEqual(len(exposed_sections), 8)
+        self.assertTrue(all(len(item["text"]) <= 1200 for item in exposed_sections))
+        self.assertTrue(all(
+            item["citation"] == f"opm-text-{metadata.source_id}#{item['label']}"
+            for item in exposed_sections
+        ))
+        self.assertEqual(len({item["citation"] for item in exposed_sections}), 4)
+
+        too_many = replace(text_record, data={
+            **text_record.data, "sections": {"DATES": ["public date"] * 5},
+        })
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=too_many),
+        ):
+            rejected = run_live(document_number=metadata.source_id)
+        self.assertEqual(rejected["policy_text_status"], "DATA_UNAVAILABLE")
+        self.assertIsNone(rejected["task_result"]["selected_document"])
+
+    def test_private_section_text_is_rejected_without_fixture_fallback(self):
+        source = _metadata_source()
+        text_record = _policy_text_record(source)
+        private_text = replace(text_record, data={
+            **text_record.data,
+            "sections": {"DATES": ["Avery Morgan, 19 Example Road has a private onboarding date."]},
+        })
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=private_text),
+            patch.object(FixtureAdapter, "load", side_effect=AssertionError("private text path used a fixture")),
+        ):
+            result = run_live(document_number="2026-19222")
+        self.assertEqual(result["policy_text_status"], "DATA_UNAVAILABLE")
+        self.assertIsNone(result["task_result"]["selected_document"])
+        self.assertNotIn("Avery Morgan", json.dumps(result))
+        self.assertNotIn("19 Example Road", json.dumps(result))
 
     def test_metadata_slug_is_absent_from_json_cli_and_witness_payload(self):
         hostile_url = (
@@ -212,7 +350,7 @@ class OnboardPathTests(unittest.TestCase):
             patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
             redirect_stdout(output),
         ):
-            self.assertEqual(main_cli(), 0)
+            self.assertEqual(main_cli([]), 0)
         cli_json = output.getvalue()
         self.assertNotIn(_PII_SLUG, cli_json)
         cli_result = json.loads(cli_json)
@@ -248,7 +386,7 @@ class OnboardPathTests(unittest.TestCase):
             patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
             redirect_stdout(output),
         ):
-            self.assertEqual(main_cli(), 0)
+            self.assertEqual(main_cli([]), 0)
         cli_json = output.getvalue()
         self.assertNotIn(_PII_SLUG, cli_json)
         self.assertIn(_CANONICAL_DOCUMENT_URL, cli_json)
@@ -294,6 +432,20 @@ class OnboardPathTests(unittest.TestCase):
         self.assertIsNone(result["task_result"]["selected_document"])
         self.assertFalse(result["ai_invoked"])
 
+    def test_cli_accepts_document_number_option(self):
+        source = _metadata_source()
+        text_record = _policy_text_record(source)
+        output = io.StringIO()
+        with (
+            patch("apps.onboardpath.flow.fetch_live", return_value=source),
+            patch("apps.onboardpath.flow.fetch_govinfo_opm_text", return_value=text_record),
+            redirect_stdout(output),
+        ):
+            self.assertEqual(main_cli(["--document-number", "2026-19222"]), 0)
+        cli_result = json.loads(output.getvalue())
+        self.assertEqual(cli_result["task_result"]["selected_document"]["document_number"], "2026-19222")
+        self.assertIsNone(cli_result["task_result"]["answer"])
+
     def test_live_rule_text_failure_does_not_replace_it_with_metadata_or_fixtures(self):
         source = _metadata_source()
         with (
@@ -338,6 +490,8 @@ class OnboardPathTests(unittest.TestCase):
         self.assertEqual(document["source_id"], record.source_id)
         self.assertEqual(document["as_of"], record.as_of)
         self.assertEqual(document["retrieved_at_utc"], record.retrieved_at_utc)
+        self.assertEqual(document["response_status"], record.response_status)
+        self.assertEqual(document["response_sha256"], record.response_sha256)
         self.assertNotIn(_PII_SLUG, exposed)
         self.assertEqual(document["source_url"], _CANONICAL_DOCUMENT_URL)
         self.assertEqual(document["terms"], record.terms_url)
@@ -351,6 +505,8 @@ class OnboardPathTests(unittest.TestCase):
         for url in bad_urls:
             with self.subTest(url=url), self.assertRaises(DataUnavailable):
                 _public_document(replace(record, source_url=url))
+        with self.assertRaises(DataUnavailable):
+            _public_document(replace(record, response_status=204))
 
     def test_adversarial_stub_transport_denials_timeout_and_invalid_schema_do_not_fallback(self):
         cases = (

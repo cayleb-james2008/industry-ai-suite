@@ -1,0 +1,15 @@
+{
+  "run_id": "four-lanes-cycle-20260925",
+  "piece": "D5",
+  "agent": "gauntlet_worker",
+  "dod_checklist": [
+    "Federal Register record response_status validated as HTTP 200 and projected with exact response hash; selected_document exposes metadata_response_status and hash; regression assertions cover both projections and reject non-200 status; all 19 OnboardPath tests pass; py_compile and git diff --check pass; no network/source path or employee/AI/action boundary change"
+  ],
+  "outputs": [
+    "apps/onboardpath/flow.py",
+    "apps/onboardpath/tests/test_flow.py",
+    "session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md"
+  ],
+  "evidence": "session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md",
+  "timestamp_utc": "2026-09-26T05:26:52Z"
+}

@@ -1,0 +1,24 @@
+{
+  "run_id": "four-lanes-cycle-20260925",
+  "piece": "D3",
+  "agent": "gauntlet_worker",
+  "dod_checklist": [
+    "default split preserved",
+    "valid cutoff 2018 uses the actual observation year",
+    "invalid boundary and missing-year cutoffs fail closed",
+    "training and holdout partitions are disjoint",
+    "future-year leakage and UNVERIFIED experiment target and release-time limits retained",
+    "existing app tests preserved",
+    "thermo self-review PASS",
+    "no trade AI performance or strategy execution added"
+  ],
+  "outputs": [
+    "apps/backtestguard/flow.py",
+    "apps/backtestguard/__main__.py",
+    "apps/backtestguard/test_backtestguard.py",
+    "apps/backtestguard/README.md",
+    "session-artifacts/four-lanes-cycle-20260925/pieces/D3-thermo-self-review.md"
+  ],
+  "evidence": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/backtestguard -p 'test_*.py' -v: 15/15 OK; changed Python py_compile exit 0; git diff --check exit 0; --help exit 0; real World Bank default and cutoff 2018 exit 0 with 15 records and response SHA-256 2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3; real World Bank invalid cutoffs 2010 2025 2026 each DATA_UNAVAILABLE JSON exit 2 with no substitute; thermo review PASS",
+  "timestamp_utc": "2026-09-26T04:06:46Z"
+}

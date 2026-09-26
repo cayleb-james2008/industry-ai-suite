@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import secrets
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from urllib.parse import urlsplit
 
 from apps._ai_receipts import complete_grounded
 
@@ -30,6 +32,8 @@ TENANT_B_CANARY = "TENANT_B_PIPELINE_CANARY_48AC"
 FIXTURES = Path(__file__).parent / "fixtures"
 PUBLIC_RESEARCH_OWNER = "pytest-dev"
 PUBLIC_RESEARCH_REPO = "pytest"
+_GITHUB_SEGMENT = re.compile(r"^[A-Za-z0-9_.-]{1,100}$")
+_SPDX_IDENTIFIER = re.compile(r"^[A-Za-z0-9.+-]+$")
 
 
 def _security_stack(runtime: Path) -> tuple[Authenticator, SecurityCore, Principal, AuditLog]:
@@ -140,7 +144,8 @@ def run_demo(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
 
 
 def _live_failure(
-    status: str, reason: str, source: SourceResult | None = None,
+    status: str, reason: str, source: SourceResult | None = None, *,
+    network_attempted: bool = False,
 ) -> dict[str, object]:
     source_receipt: dict[str, object] = {"provider": Provider.GITHUB_REPOSITORY.value}
     if source is not None:
@@ -173,18 +178,37 @@ def _live_failure(
         "side_effect_count": 0,
         "integration_adapter": {
             "type": "suite_core.fetch_live",
-            "mode": "fixed public repository metadata only; no fixture or cached fallback",
+            "mode": "selected public GitHub repository metadata only; no fixture or cached fallback",
             "network_enabled": True,
+            "network_attempted": network_attempted,
             "outreach_capability": "none",
         },
     }
 
 
-def _repository_metadata(record: SourceRecord, request_url: str) -> dict[str, str]:
+def _safe_repository_input(owner: object, repo: object) -> bool:
+    return all(
+        isinstance(segment, str)
+        and _GITHUB_SEGMENT.fullmatch(segment) is not None
+        and segment not in {".", ".."}
+        for segment in (owner, repo)
+    )
+
+
+def _repository_metadata(
+    record: SourceRecord, request_url: str, owner: str, repo: str,
+) -> dict[str, object]:
     data = record.data
-    expected_name = f"{PUBLIC_RESEARCH_OWNER}/{PUBLIC_RESEARCH_REPO}"
+    expected_name = f"{owner}/{repo}"
     expected_url = f"https://api.github.com/repos/{expected_name}"
-    # The shared privacy projection redacts `full_name`; exact request and record URLs bind the selected repo.
+    # The shared adapter checks the raw full_name against the requested path before
+    # redacting it; html_url retains returned casing for the handoff.
+    html_url = data.get("html_url")
+    try:
+        parsed_html_url = urlsplit(html_url) if isinstance(html_url, str) else None
+    except ValueError as error:
+        raise DataUnavailable("GitHub repository page URL is malformed") from error
+    returned_path = parsed_html_url.path.removeprefix("/") if parsed_html_url else ""
     if (
         record.provider != Provider.GITHUB_REPOSITORY.value
         or record.task_fit != TaskFit.PUBLIC_REPOSITORY_METADATA.value
@@ -192,14 +216,25 @@ def _repository_metadata(record: SourceRecord, request_url: str) -> dict[str, st
         or not record.read_only
         or request_url != expected_url
         or record.source_url != expected_url
-        or not re.fullmatch(r"\d+", record.source_id)
+        or not isinstance(record.source_id, str)
+        or re.fullmatch(r"\d+", record.source_id) is None
         or data.get("id") != int(record.source_id)
+        or parsed_html_url is None
+        or parsed_html_url.scheme != "https"
+        or parsed_html_url.hostname != "github.com"
+        or parsed_html_url.netloc != "github.com"
+        or parsed_html_url.query
+        or parsed_html_url.fragment
+        or returned_path.casefold() != expected_name.casefold()
     ):
         raise DataUnavailable("GitHub repository identity or provenance schema mismatch")
     updated = record.as_of
     try:
         parsed_updated = datetime.fromisoformat(updated.replace("Z", "+00:00"))
         if parsed_updated.tzinfo is None:
+            raise ValueError
+        parsed_retrieved = datetime.fromisoformat(record.retrieved_at_utc.replace("Z", "+00:00"))
+        if parsed_retrieved.tzinfo is None:
             raise ValueError
     except (AttributeError, ValueError) as error:
         raise DataUnavailable("GitHub repository update timestamp is invalid") from error
@@ -209,37 +244,60 @@ def _repository_metadata(record: SourceRecord, request_url: str) -> dict[str, st
         raise UnverifiedSource("selected GitHub repository has no verified license")
     spdx = license_info.get("spdx_id")
     license_url = license_info.get("url")
-    if spdx != "MIT" or not isinstance(license_url, str) or license_url != record.terms_url:
-        raise UnverifiedSource("selected GitHub repository lacks the expected MIT terms reference")
-    html_url = data.get("html_url")
+    if (
+        not isinstance(spdx, str)
+        or spdx in {"", "NOASSERTION", "OTHER"}
+        or _SPDX_IDENTIFIER.fullmatch(spdx) is None
+    ):
+        raise UnverifiedSource("selected GitHub repository license is missing or ambiguous")
+    expected_terms_url = f"https://api.github.com/licenses/{spdx.lower()}"
+    if (
+        not isinstance(license_url, str)
+        or license_url != expected_terms_url
+        or record.terms_url != expected_terms_url
+    ):
+        raise UnverifiedSource("GitHub SPDX identifier and exact returned terms URL do not match")
     branch = data.get("default_branch")
     if (
-        not isinstance(html_url, str)
-        or html_url != f"https://github.com/{expected_name}"
-        or not isinstance(branch, str)
+        not isinstance(branch, str)
         or not branch
     ):
         raise DataUnavailable("GitHub repository metadata schema mismatch")
+    age_seconds = int((
+        parsed_retrieved.astimezone(timezone.utc)
+        - parsed_updated.astimezone(timezone.utc)
+    ).total_seconds())
     return {
         "repository_id": record.source_id,
-        "full_name": expected_name,
+        "full_name": returned_path,
         "html_url": html_url,
         "default_branch": branch,
         "license_spdx_id": spdx,
+        "license_terms_url": record.terms_url,
+        "updated_at": record.as_of,
+        "updated_age_seconds": age_seconds,
+        "updated_age_days": round(age_seconds / 86400, 6),
     }
 
 
-def _public_research_checks(record: SourceRecord, evidence_id: str) -> list[dict[str, object]]:
-    updated_at = datetime.fromisoformat(record.as_of.replace("Z", "+00:00"))
-    retrieved_at = datetime.fromisoformat(record.retrieved_at_utc.replace("Z", "+00:00"))
-    age_days = max(0, (retrieved_at.astimezone(timezone.utc) - updated_at.astimezone(timezone.utc)).days)
+def _public_research_checks(
+    metadata: Mapping[str, object], evidence_id: str,
+) -> list[dict[str, object]]:
     return [
         {"check": "repository_identity", "status": "PASS", "evidence_ids": [evidence_id]},
-        {"check": "reported_license", "status": "PASS", "value": "MIT", "evidence_ids": [evidence_id]},
         {
-            "check": "source_update_age", "status": "OBSERVED", "days": age_days,
-            "as_of": record.as_of, "precision": record.as_of_precision,
-            "note": "This is the repository metadata timestamp, not proof of current activity.",
+            "check": "reported_license", "status": "PASS",
+            "spdx_id": metadata["license_spdx_id"],
+            "terms_url": metadata["license_terms_url"],
+            "evidence_ids": [evidence_id],
+        },
+        {
+            "check": "source_update_age", "status": "OBSERVED",
+            "age_seconds": metadata["updated_age_seconds"],
+            "age_days": metadata["updated_age_days"],
+            "as_of": metadata["updated_at"],
+            "precision": "second",
+            "note": "This source-provided metadata timestamp is an observation, not proof of current code contents or activity.",
             "evidence_ids": [evidence_id],
         },
         {
@@ -249,29 +307,57 @@ def _public_research_checks(record: SourceRecord, evidence_id: str) -> list[dict
     ]
 
 
-def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
-    """Prepare a deterministic public-repository research handoff, not a sales lead."""
+def run_live(
+    ai_client: LocalOpenAIClient | None = None, *,
+    owner: str | None = None, repo: str | None = None,
+) -> dict[str, object]:
+    """Prepare a public-repository metadata handoff, never a sales lead."""
+    if owner is None and repo is None:
+        owner, repo = PUBLIC_RESEARCH_OWNER, PUBLIC_RESEARCH_REPO
+    if not _safe_repository_input(owner, repo):
+        return _live_failure(
+            "UNVERIFIED",
+            "Provide both --owner and --repo as single safe GitHub path segments; no request was made.",
+        )
+
     try:
         source = fetch_live(
             Provider.GITHUB_REPOSITORY,
-            owner=PUBLIC_RESEARCH_OWNER,
-            repo=PUBLIC_RESEARCH_REPO,
+            owner=owner,
+            repo=repo,
             task_fit=TaskFit.PUBLIC_REPOSITORY_METADATA,
         )
     except DataUnavailable as error:
-        return _live_failure("DATA_UNAVAILABLE", str(error))
+        return _live_failure("DATA_UNAVAILABLE", str(error), network_attempted=True)
     except UnverifiedSource as error:
-        return _live_failure("UNVERIFIED", str(error))
+        return _live_failure("UNVERIFIED", str(error), network_attempted=True)
 
     if source.status != "VERIFIED_SOURCE":
-        return _live_failure(source.status, source.reason or "GitHub metadata is not verified", source)
+        return _live_failure(
+            source.status, source.reason or "GitHub metadata is not verified", source,
+            network_attempted=True,
+        )
     if len(source.records) != 1:
-        return _live_failure("DATA_UNAVAILABLE", "GitHub metadata response did not identify exactly one repository", source)
+        return _live_failure(
+            "DATA_UNAVAILABLE", "GitHub metadata response did not identify exactly one repository",
+            source, network_attempted=True,
+        )
     record = source.records[0]
     try:
-        metadata = _repository_metadata(record, source.request_url)
+        if (
+            source.provider != Provider.GITHUB_REPOSITORY.value
+            or source.task_fit != TaskFit.PUBLIC_REPOSITORY_METADATA.value
+            or not source.read_only
+            or source.response_status != 200
+            or source.response_sha256 != record.response_sha256
+            or source.response_status != record.response_status
+            or source.retrieved_at_utc != record.retrieved_at_utc
+            or source.request_body_sha256 != record.request_body_sha256
+        ):
+            raise DataUnavailable("GitHub repository response identity or provenance mismatch")
+        metadata = _repository_metadata(record, source.request_url, owner, repo)
     except (DataUnavailable, UnverifiedSource) as error:
-        return _live_failure(error.status, str(error), source)
+        return _live_failure(error.status, str(error), source, network_attempted=True)
 
     evidence_id = f"github-repo-{record.source_id}"
     return {
@@ -281,14 +367,16 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
         "task_result": {
             "status": "PUBLIC_REPOSITORY_RESEARCH_ONLY",
             "summary": (
-                f"GitHub identifies {metadata['full_name']} as a public repository on "
-                f"branch {metadata['default_branch']} with an MIT license."
+                f"GitHub identifies {metadata['full_name']} (repository ID {metadata['repository_id']}) "
+                f"as a public repository on branch {metadata['default_branch']}; its metadata reports "
+                f"{metadata['license_spdx_id']} and updated_at {metadata['updated_at']} "
+                f"(observed age at retrieval: {metadata['updated_age_seconds']} seconds)."
             ),
             "metadata": metadata,
             "citations": [evidence_id],
-            "review_checks": _public_research_checks(record, evidence_id),
+            "review_checks": _public_research_checks(metadata, evidence_id),
             "human_verification_task": (
-                "A human reviewer must confirm the repository identity, license, and metadata update date, then decide whether it is relevant to an explicitly authorized public-research question; do not create a lead or initiate contact."
+                "Review the selected repository identity, default branch, source updated_at, and its exact returned SPDX terms URL; decide whether those public metadata facts fit an explicitly authorized research question. The update timestamp is not proof of current activity. Do not treat this as a lead, CRM/account evidence, consent, or permission to contact anyone."
             ),
         },
         "source": {
@@ -323,7 +411,11 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
         "risk": ["Do not infer buyer intent, account need, relationship, consent, or outreach permission from public repository metadata."],
         "handoff": {
             "owner": "public-repository-research-review",
-            "next_action": "Verify the repository identity/license and assess relevance only within a separately authorized public-research task.",
+            "next_action": (
+                f"Review the exact returned license terms at {metadata['license_terms_url']}, "
+                "confirm the repository metadata is relevant to an explicitly authorized public-research "
+                "question, and keep the timestamp limitation visible; do not create a lead or initiate contact."
+            ),
         },
         "ai_status": "NON-AI / DETERMINISTIC FALLBACK",
         "ai_invoked": False,
@@ -334,15 +426,25 @@ def run_live(ai_client: LocalOpenAIClient | None = None) -> dict[str, object]:
         "side_effect_count": 0,
         "integration_adapter": {
             "type": "suite_core.fetch_live",
-            "mode": "fixed public GitHub repository metadata plus deterministic identity/license/age checks; no fixture or cached fallback",
+            "mode": "selected public GitHub repository metadata plus deterministic identity/license/age checks; no fixture or cached fallback",
             "network_enabled": True,
+            "network_attempted": True,
             "outreach_capability": "none",
         },
     }
 
 
-def main() -> int:
-    result = run_live()
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Prepare a public GitHub repository metadata research handoff. "
+            "Defaults to pytest-dev/pytest when neither selection flag is supplied."
+        )
+    )
+    parser.add_argument("--owner", help="GitHub owner path segment (supply together with --repo)")
+    parser.add_argument("--repo", help="GitHub repository path segment (supply together with --owner)")
+    args = parser.parse_args(argv)
+    result = run_live(owner=args.owner, repo=args.repo)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result["status"] == "VERIFIED_SOURCE" else 1
 

@@ -1,0 +1,16 @@
+{
+  "run_id": "four-lanes-cycle-20260925",
+  "piece": "R1",
+  "agent": "gauntlet_researcher",
+  "dod_checklist": [
+    "official Mempool terms and My First Bitcoin target evidence reviewed",
+    "current docs-reader limitation recorded",
+    "researcher UNVERIFIED finding preserved",
+    "lead narrow source decision recorded with one GET and no reuse-license claim"
+  ],
+  "outputs": [
+    "session-artifacts/four-lanes-cycle-20260925/evidence/mempool-source-review.md"
+  ],
+  "evidence": "session-artifacts/four-lanes-cycle-20260925/evidence/mempool-source-review.md",
+  "timestamp_utc": "2026-09-26T02:37:07Z"
+}

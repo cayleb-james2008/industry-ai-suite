@@ -1,0 +1,21 @@
+{
+  "run_id": "four-lanes-cycle-20260925",
+  "piece": "D2",
+  "agent": "gauntlet_worker",
+  "dod_checklist": [
+    "default and custom live paths verified",
+    "invalid inputs cause no request",
+    "source identity and license mismatches fail closed",
+    "updated_at age limitation is explicit",
+    "account consent and outreach remain unverified",
+    "app tests compile diff check and thermo review pass"
+  ],
+  "outputs": [
+    "apps/pipelinerelay/flow.py",
+    "apps/pipelinerelay/tests/test_flow.py",
+    "apps/pipelinerelay/README.md",
+    "session-artifacts/four-lanes-cycle-20260925/pieces/D2-thermo-self-review.md"
+  ],
+  "evidence": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/pipelinerelay/tests -p 'test*.py' -v: 16/16 OK; python3 -m py_compile apps/pipelinerelay/flow.py apps/pipelinerelay/tests/test_flow.py: exit 0; git diff --check: exit 0; CLI help: exit 0; default live pytest-dev/pytest: VERIFIED_SOURCE HTTP 200 id 37489525 MIT terms https://api.github.com/licenses/mit response SHA a66e3ba07beccf2c5bfb3674ad2f03ddbfd840a721cf79654f85d52c551ade94 as-of 2026-09-25T23:52:27Z; custom live pallets/flask: VERIFIED_SOURCE HTTP 200 id 596892 BSD-3-Clause terms https://api.github.com/licenses/bsd-3-clause response SHA 0f9bced7279ffeb0d8350bffc4f33a15a83ec351abaa365a55d340a0725c0702 as-of 2026-09-26T02:34:19Z; python/cpython UNVERIFIED for missing license; no AI CRM outreach or publication; receipt session-artifacts/four-lanes-cycle-20260925/pieces/D2-thermo-self-review.md",
+  "timestamp_utc": "2026-09-26T03:14:01Z"
+}

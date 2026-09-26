@@ -1,0 +1,39 @@
+{
+  "ai_completion_claim": false,
+  "ai_invoked": false,
+  "ai_output": null,
+  "ai_status": "NOT REQUESTED",
+  "evidence": [],
+  "handoff": {
+    "next_action": "Choose a Rule or Proposed Rule document number from the current OPM metadata list; no GovInfo text request was made. Connect authorized employee records and applicable employer policy before answering a person.",
+    "owner": "public-opm-policy-review-queue"
+  },
+  "integration_adapter": {
+    "personnel_decision_capability": false,
+    "provider": "federal_register_opm",
+    "read_only": true,
+    "type": "suite_core.fetch_live"
+  },
+  "missing_sources": [
+    "consent-authorized employee/onboarding records with requester-specific access",
+    "approved internal HR policy text applicable to the employee's request"
+  ],
+  "policy_text_failure": null,
+  "policy_text_status": "UNVERIFIED",
+  "project": "OnboardPath",
+  "provider": "federal_register_opm",
+  "request_url": null,
+  "side_effect_count": 0,
+  "source_status": "UNVERIFIED",
+  "status": "UNVERIFIED",
+  "task_result": {
+    "answer": null,
+    "documents": [],
+    "employee_records_loaded": false,
+    "limitation": "No public OPM document was selected; this workflow cannot provide employer policy, legal advice, employee evidence, or permission proof.",
+    "status": "PUBLIC_OPM_DOCUMENT_NOT_FOUND"
+  },
+  "uncertainty": [
+    "The requested document number is malformed; use a Federal Register number in YYYY-NNNN.. format. No metadata or GovInfo text request was made."
+  ]
+}

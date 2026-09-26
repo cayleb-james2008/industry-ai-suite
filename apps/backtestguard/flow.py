@@ -181,8 +181,15 @@ def _reject_non_substantive_summary(ai: dict[str, object]) -> dict[str, object]:
     }
 
 
-def run_live(ai_client: object | None = None) -> dict[str, object]:
+def run_live(
+    ai_client: object | None = None,
+    *,
+    cutoff_year: int | None = None,
+) -> dict[str, object]:
     """Audit chronological splits over actual USA GDP history; never use experiment fixtures."""
+    if cutoff_year is not None and type(cutoff_year) is not int:
+        return _live_failure("DATA_UNAVAILABLE", "The requested cutoff year must be an integer.")
+
     try:
         source = fetch_live(Provider.WORLD_BANK_USA_GDP, task_fit=TaskFit.PUBLIC_US_GDP)
     except DataUnavailable as error:
@@ -230,13 +237,39 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
         return _live_failure("DATA_UNAVAILABLE", "World Bank returned an invalid or incomplete GDP record set.")
 
     years = sorted(values_by_year)
-    cutoff_year = years[(len(years) * 2 // 3) - 1]
-    training_years = [year for year in years if year <= cutoff_year]
-    holdout_years = [year for year in years if year > cutoff_year]
+    evidence_ids = tuple(values_by_year[year][0].source_id for year in years)
+    selected_cutoff_year = (
+        cutoff_year if cutoff_year is not None else years[(len(years) * 2 // 3) - 1]
+    )
+    training_years = [year for year in years if year <= selected_cutoff_year]
+    holdout_years = [year for year in years if year > selected_cutoff_year]
+    if cutoff_year is not None:
+        if selected_cutoff_year not in values_by_year:
+            cutoff_error = f"Cutoff year {selected_cutoff_year} is not an actual World Bank observation year."
+        elif not training_years or not holdout_years:
+            cutoff_error = "The cutoff must leave non-empty training and holdout partitions."
+        else:
+            cutoff_error = None
+        if cutoff_error is not None:
+            result = _live_failure(
+                "DATA_UNAVAILABLE",
+                f"{cutoff_error} The requested split was rejected; no default or substitute was used.",
+                project_source_metadata(
+                    asdict(source), record_data_fields=("countryiso3code", "date", "value"),
+                ),
+            )
+            result.update({
+                "cutoff_status": "INVALID",
+                "requested_cutoff_year": selected_cutoff_year,
+                "source_ids": list(evidence_ids),
+                "source_hash": source.response_sha256,
+            })
+            return result
+
     control_valid = bool(
         training_years and holdout_years
         and set(training_years).isdisjoint(holdout_years)
-        and max(training_years) <= cutoff_year < min(holdout_years)
+        and max(training_years) <= selected_cutoff_year < min(holdout_years)
     )
     observations = [
         {
@@ -250,25 +283,25 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
         }
         for year in years
     ]
-    future_years = [year for year in years if year > cutoff_year]
+    future_years = [year for year in years if year > selected_cutoff_year]
     analysis = {
         "label": "LIMITED PUBLIC GDP CHRONOLOGY / PROVENANCE CHECK — not a completed backtest",
         "experiment_record_status": "UNVERIFIED — no external experiment log or experiment owner record was supplied",
         "experiment_parameters": {
             "source_series": "World Bank USA NY.GDP.MKTP.CD (GDP current US$)",
             "observation_years": [years[0], years[-1]],
-            "decision_cutoff_year": cutoff_year,
+            "decision_cutoff_year": selected_cutoff_year,
             "training_years": training_years,
             "holdout_years": holdout_years,
             "split_rule": "train on observation years at or before cutoff; hold out later observation years",
-            "label_or_return_definition": "none supplied",
-            "publication_availability_rule": "not established; source observation year is not a release timestamp",
+            "label_or_return_definition": "UNVERIFIED — no target label or return definition was supplied",
+            "publication_availability_rule": "UNVERIFIED — source release timing is not established; observation year is not a release timestamp",
         },
         "valid_chronological_control": {
             "passes_observation_year_order_only": control_valid,
             "training_years_disjoint_from_holdout": set(training_years).isdisjoint(holdout_years),
-            "training_does_not_exceed_cutoff": max(training_years) <= cutoff_year,
-            "holdout_starts_after_cutoff": min(holdout_years) > cutoff_year,
+            "training_does_not_exceed_cutoff": max(training_years) <= selected_cutoff_year,
+            "holdout_starts_after_cutoff": min(holdout_years) > selected_cutoff_year,
             "meaning": "A structurally valid year-ordered control, not evidence of a real or economically valid experiment.",
         },
         "future_observation_leakage_probe": {
@@ -280,7 +313,6 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
         "record_count": len(observations),
         "observations": observations,
     }
-    evidence_ids = tuple(values_by_year[year][0].source_id for year in years)
     summary_context = {
         "record_count": analysis["record_count"],
         "training_years": training_years,
@@ -312,6 +344,7 @@ def run_live(ai_client: object | None = None) -> dict[str, object]:
             asdict(source), record_data_fields=("countryiso3code", "date", "value"),
         ),
         "source_ids": list(evidence_ids),
+        "source_hash": source.response_sha256,
         "task_result": analysis,
         "job_verdict": "UNVERIFIED",
         "uncertainty": "This is an integrity analysis of actual annual GDP observation years, not investment returns or a real external experiment log. Source release/availability timestamps, a target label, experiment provenance, and an accountable experiment owner are absent; nominal GDP values are not market performance.",

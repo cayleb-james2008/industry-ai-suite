@@ -126,11 +126,25 @@ class BacktestGuardTests(unittest.TestCase):
         self.assertIn("not a completed backtest", analysis["label"])
         self.assertEqual(analysis["experiment_parameters"]["decision_cutoff_year"], 2020)
         self.assertEqual(len(analysis["experiment_parameters"]["training_years"]), 10)
+        self.assertEqual(analysis["experiment_parameters"]["training_years"], list(range(2011, 2021)))
         self.assertEqual(analysis["experiment_parameters"]["holdout_years"], [2021, 2022, 2023, 2024, 2025])
         self.assertTrue(analysis["valid_chronological_control"]["passes_observation_year_order_only"])
         self.assertTrue(analysis["future_observation_leakage_probe"]["would_leak_if_used_before_cutoff"])
         self.assertFalse(analysis["future_observation_leakage_probe"]["observed_in_this_control"])
         self.assertIn("no external experiment log", analysis["experiment_record_status"].lower())
+        self.assertTrue(analysis["experiment_parameters"]["label_or_return_definition"].startswith("UNVERIFIED"))
+        self.assertTrue(analysis["experiment_parameters"]["publication_availability_rule"].startswith("UNVERIFIED"))
+        self.assertEqual(result["source_hash"], result["source_metadata"]["response_sha256"])
+        self.assertEqual(len(result["source_ids"]), 15)
+        self.assertEqual(result["source_ids"], [f"USA:NY.GDP.MKTP.CD:{year}" for year in range(2011, 2026)])
+        self.assertEqual(
+            {record["as_of"] for record in result["source_metadata"]["records"]},
+            {str(year) for year in range(2011, 2026)},
+        )
+        self.assertEqual(
+            {record["terms_url"] for record in result["source_metadata"]["records"]},
+            {"https://stub.invalid/terms"},
+        )
         self.assertEqual(result["source_metadata"]["records"][0]["terms_url"], "https://stub.invalid/terms")
         self.assertEqual(
             set(result["source_metadata"]["records"][0]["data"]),
@@ -140,6 +154,73 @@ class BacktestGuardTests(unittest.TestCase):
         self.assertEqual(result["ai_status"], "NON-AI / DETERMINISTIC FALLBACK")
         self.assertEqual(result["ai_completion_verdict"], "UNVERIFIED")
         self.assertEqual(result["side_effect_count"], 0)
+
+    def test_live_alternative_cutoff_uses_actual_observation_and_keeps_partitions_disjoint(self):
+        with patch("apps.backtestguard.flow.fetch_live", side_effect=_adversarial_stub_transport):
+            result = run_live(cutoff_year=2018)
+
+        analysis = result["task_result"]
+        params = analysis["experiment_parameters"]
+        training = params["training_years"]
+        holdout = params["holdout_years"]
+        self.assertEqual(result["source_status"], "VERIFIED_SOURCE")
+        self.assertEqual(result["job_verdict"], "UNVERIFIED")
+        self.assertEqual(params["decision_cutoff_year"], 2018)
+        self.assertEqual(training, list(range(2011, 2019)))
+        self.assertEqual(holdout, list(range(2019, 2026)))
+        self.assertTrue(set(training).isdisjoint(holdout))
+        self.assertLessEqual(max(training), params["decision_cutoff_year"])
+        self.assertGreater(min(holdout), params["decision_cutoff_year"])
+        leakage = analysis["future_observation_leakage_probe"]
+        self.assertEqual(leakage["future_years"], holdout)
+        self.assertTrue(leakage["would_leak_if_used_before_cutoff"])
+        self.assertFalse(leakage["observed_in_this_control"])
+        self.assertTrue(analysis["experiment_record_status"].startswith("UNVERIFIED"))
+        self.assertTrue(params["label_or_return_definition"].startswith("UNVERIFIED"))
+        self.assertTrue(params["publication_availability_rule"].startswith("UNVERIFIED"))
+        self.assertIn("not a completed backtest", analysis["label"])
+
+    def test_live_rejects_out_of_range_and_empty_holdout_cutoffs_without_fallback(self):
+        for year in (2010, 2025, 2026):
+            with self.subTest(cutoff_year=year), patch(
+                "apps.backtestguard.flow.fetch_live", side_effect=_adversarial_stub_transport,
+            ) as fetch:
+                result = run_live(cutoff_year=year)
+
+            self.assertEqual(result["data_status"], "DATA_UNAVAILABLE")
+            self.assertEqual(result["cutoff_status"], "INVALID")
+            self.assertEqual(result["requested_cutoff_year"], year)
+            self.assertIsNone(result["task_result"])
+            self.assertIn("no default or substitute was used", result["uncertainty"])
+            self.assertEqual(len(result["source_ids"]), 15)
+            self.assertEqual(result["source_hash"], result["source_metadata"]["response_sha256"])
+            fetch.assert_called_once()
+
+    def test_live_rejects_cutoff_year_missing_from_fifteen_observations(self):
+        source = _adversarial_stub_transport(
+            Provider.WORLD_BANK_USA_GDP, task_fit=TaskFit.PUBLIC_US_GDP,
+        )
+        missing_year_replacement = replace(
+            source.records[7],
+            source_id="USA:NY.GDP.MKTP.CD:2026",
+            as_of="2026",
+            data={**source.records[7].data, "date": "2026"},
+        )
+        gapped_source = replace(
+            source,
+            records=(*source.records[:7], missing_year_replacement, *source.records[8:]),
+        )
+        with patch("apps.backtestguard.flow.fetch_live", return_value=gapped_source):
+            result = run_live(cutoff_year=2018)
+
+        self.assertEqual(result["data_status"], "DATA_UNAVAILABLE")
+        self.assertEqual(result["cutoff_status"], "INVALID")
+        self.assertEqual(result["requested_cutoff_year"], 2018)
+        self.assertIn("not an actual World Bank observation year", result["uncertainty"])
+        self.assertNotIn("USA:NY.GDP.MKTP.CD:2018", result["source_ids"])
+        self.assertIn("USA:NY.GDP.MKTP.CD:2026", result["source_ids"])
+        self.assertIsNone(result["task_result"])
+        self.assertIn("no default or substitute was used", result["uncertainty"])
 
     def test_live_rejects_a_citation_only_ai_response(self):
         source = _adversarial_stub_transport(

@@ -1,0 +1,29 @@
+{
+  "gauntlet_researcher": {
+    "agent": "gauntlet_researcher",
+    "role": "worker",
+    "first_seen_utc": "2026-09-26T02:37:07Z",
+    "last_seen_utc": "2026-09-26T02:37:07Z",
+    "last_seen_epoch": 1790390227.4421659,
+    "status": "done",
+    "message_count": 1
+  },
+  "lead": {
+    "agent": "lead",
+    "role": "lead",
+    "first_seen_utc": "2026-09-26T02:54:51Z",
+    "last_seen_utc": "2026-09-26T04:43:09Z",
+    "last_seen_epoch": 1790397789.9710352,
+    "status": "bailed",
+    "message_count": 5
+  },
+  "gauntlet_worker": {
+    "agent": "gauntlet_worker",
+    "role": "worker",
+    "first_seen_utc": "2026-09-26T03:02:33Z",
+    "last_seen_utc": "2026-09-26T05:26:52Z",
+    "last_seen_epoch": 1790400412.3026962,
+    "status": "done",
+    "message_count": 39
+  }
+}

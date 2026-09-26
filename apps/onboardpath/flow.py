@@ -1,8 +1,10 @@
-"""Role-scoped onboarding guidance; no personnel decisions or record access."""
+"""Synthetic role-scoped demo and public OPM review; no live personnel-data access."""
 
 from __future__ import annotations
 
+import argparse
 import json
+import re
 import secrets
 import time
 from collections.abc import Mapping
@@ -33,6 +35,11 @@ FORBIDDEN_PERSONNEL = "personnel-record-private-410"
 TENANT_B_CANARY = "TENANT_B_ONBOARDPATH_CANARY_6E15"
 FIXTURES = Path(__file__).parent / "fixtures"
 _PUBLIC_OPM_TYPES = frozenset({"Rule", "Proposed Rule", "Notice", "Presidential Document", "Correction"})
+_RULE_TYPES = frozenset({"Rule", "Proposed Rule"})
+_GOVINFO_SECTION_LABELS = ("SUMMARY", "DATES", "ADDRESSES", "SUPPLEMENTARY INFORMATION")
+_DOCUMENT_NUMBER = re.compile(r"[0-9]{4}-[0-9]{4,6}\Z")
+_SHA256 = re.compile(r"[0-9a-f]{64}\Z")
+_MAX_EXPOSED_SECTION_TEXTS = 8
 
 
 def _security_stack(runtime: Path) -> tuple[Authenticator, SecurityCore, Principal, AuditLog]:
@@ -143,6 +150,8 @@ def _public_document(record: SourceRecord) -> dict[str, object]:
             or record.read_only is not True
             or not isinstance(record.terms_url, str) or not record.terms_url
             or not isinstance(record.retrieved_at_utc, str)
+            or record.response_status != 200
+            or not isinstance(record.response_sha256, str) or _SHA256.fullmatch(record.response_sha256) is None
             or not isinstance(document_number, str) or not isinstance(publication_date, str)
             or not isinstance(record.source_url, str)):
         raise DataUnavailable("Federal Register OPM metadata failed application validation")
@@ -157,6 +166,7 @@ def _public_document(record: SourceRecord) -> dict[str, object]:
         "retrieved_at_utc": record.retrieved_at_utc,
         "terms": record.terms_url,
         "read_only": record.read_only,
+        "response_status": record.response_status,
         "response_sha256": record.response_sha256,
     }
     document_type = data.get("type")
@@ -186,6 +196,13 @@ def _live_status(
     }
 
 
+def _safe_public_text(value: object, maximum_length: int) -> bool:
+    return (
+        isinstance(value, str) and bool(value.strip()) and len(value) <= maximum_length
+        and str(redact(value)) == value
+    )
+
+
 def _safe_policy_text(metadata: SourceRecord, text_source: SourceRecord) -> list[str]:
     data = text_source.data
     paragraphs = data.get("document_text") if isinstance(data, Mapping) else None
@@ -196,8 +213,7 @@ def _safe_policy_text(metadata: SourceRecord, text_source: SourceRecord) -> list
         or text_source.source_url != govinfo_opm_url(metadata)
         or text_source.response_status != 200
         or not isinstance(text_source.response_sha256, str)
-        or len(text_source.response_sha256) != 64
-        or any(character not in "0123456789abcdef" for character in text_source.response_sha256)
+        or _SHA256.fullmatch(text_source.response_sha256) is None
         or text_source.as_of != metadata.as_of
         or text_source.as_of_precision != "day"
         or not isinstance(text_source.retrieved_at_utc, str)
@@ -208,10 +224,7 @@ def _safe_policy_text(metadata: SourceRecord, text_source: SourceRecord) -> list
         or not isinstance(paragraphs, list)
         or not paragraphs
         or len(paragraphs) > 8
-        or any(
-            not isinstance(paragraph, str) or not paragraph.strip() or len(paragraph) > 1000
-            for paragraph in paragraphs
-        )
+        or any(not _safe_public_text(paragraph, 1000) for paragraph in paragraphs)
         or data.get("title") != metadata.data.get("title")
         or data.get("type") != metadata.data.get("type")
         or data.get("metadata_response_sha256") != metadata.response_sha256
@@ -223,16 +236,83 @@ def _safe_policy_text(metadata: SourceRecord, text_source: SourceRecord) -> list
     return paragraphs
 
 
+def _safe_section_reviews(metadata: SourceRecord, text_source: SourceRecord) -> list[dict[str, str]]:
+    """Project only bounded, privacy-safe section text with stable citations."""
+    raw_sections = text_source.data["sections"]
+    if (
+        len(raw_sections) > len(_GOVINFO_SECTION_LABELS)
+        or any(label not in _GOVINFO_SECTION_LABELS for label in raw_sections)
+    ):
+        raise DataUnavailable("GovInfo OPM text returned too many section labels")
+
+    reviews: list[dict[str, str]] = []
+    for label in _GOVINFO_SECTION_LABELS:
+        if label not in raw_sections:
+            continue
+        texts = raw_sections[label]
+        if not isinstance(texts, list) or len(texts) > 4:
+            raise DataUnavailable("GovInfo OPM section text exceeded its safe bounds")
+        for text in texts:
+            if not _safe_public_text(text, 1200):
+                raise DataUnavailable("GovInfo OPM section text failed privacy or length checks")
+            if len(reviews) < _MAX_EXPOSED_SECTION_TEXTS:
+                reviews.append({
+                    "label": label,
+                    "text": text,
+                    "citation": f"opm-text-{metadata.source_id}#{label}",
+                })
+    return reviews
+
+
+def _no_document_status(reason: str, missing: list[str]) -> dict[str, object]:
+    result = _live_status("UNVERIFIED", reason, missing)
+    result["policy_text_status"] = "UNVERIFIED"
+    result["policy_text_failure"] = None
+    result["task_result"]["status"] = "PUBLIC_OPM_DOCUMENT_NOT_FOUND"
+    result["task_result"]["limitation"] = (
+        "No public OPM document was selected; this workflow cannot provide employer policy, legal advice, "
+        "employee evidence, or permission proof."
+    )
+    result["handoff"] = {
+        "owner": "public-opm-policy-review-queue",
+        "next_action": (
+            "Choose a Rule or Proposed Rule document number from the current OPM metadata list; "
+            "no GovInfo text request was made. Connect authorized employee records and applicable employer policy "
+            "before answering a person."
+        ),
+    }
+    return result
+
+
+def _matching_rule_records(records: tuple[SourceRecord, ...], document_number: str | None) -> list[SourceRecord]:
+    return [
+        record for record in records
+        if record.data.get("type") in _RULE_TYPES
+        and record.data.get("document_number") == record.source_id
+        and isinstance(record.data.get("title"), str)
+        and (document_number is None or record.source_id == document_number)
+    ]
+
+
 def run_live(
     ai_client: LocalOpenAIClient | OpenAICompatibleClient | None = None,
+    document_number: str | None = None,
 ) -> dict[str, object]:
-    """Review public OPM rule text only; employee records and employer policy stay unverified."""
+    """Review one admitted public OPM rule; employee records and employer policy stay unverified."""
     if ai_client is not None and type(ai_client) not in (LocalOpenAIClient, OpenAICompatibleClient):
         raise TypeError("ai_client must be a suite_core OpenAI-compatible client")
     missing = [
         "consent-authorized employee/onboarding records with requester-specific access",
         "approved internal HR policy text applicable to the employee's request",
     ]
+    if document_number is not None and (
+        not isinstance(document_number, str) or _DOCUMENT_NUMBER.fullmatch(document_number) is None
+    ):
+        return _no_document_status(
+            "The requested document number is malformed; use a Federal Register number in YYYY-NNNN.. format. "
+            "No metadata or GovInfo text request was made.",
+            missing,
+        )
     try:
         source = fetch_live(
             Provider.FEDERAL_REGISTER_OPM,
@@ -253,7 +333,8 @@ def run_live(
         if (source.provider != Provider.FEDERAL_REGISTER_OPM.value
                 or source.task_fit != TaskFit.PUBLIC_OPM_POLICY_DOCUMENTS.value
                 or source.read_only is not True or source.response_status != 200
-                or len(source.response_sha256) != 64):
+                or not isinstance(source.response_sha256, str)
+                or _SHA256.fullmatch(source.response_sha256) is None):
             raise DataUnavailable("Federal Register OPM response failed application validation")
         documents = [_public_document(record) for record in source.records]
     except DataUnavailable:
@@ -262,19 +343,25 @@ def run_live(
             "The live OPM metadata failed application schema/provenance checks; no fixture fallback was used.",
             missing, source.request_url,
         )
-    metadata_record = next((
-        record for record in source.records
-        if record.data.get("type") in {"Rule", "Proposed Rule"}
-        and isinstance(record.data.get("title"), str)
-    ), None)
+    matching_records = _matching_rule_records(source.records, document_number)
+    selection_failure = document_number is not None and len(matching_records) != 1
+    metadata_record = matching_records[0] if matching_records and not selection_failure else None
     text_record: SourceRecord | None = None
     text_paragraphs: list[str] = []
+    section_reviews: list[dict[str, str]] = []
     policy_text_status = "UNVERIFIED"
-    policy_text_reason = "No recent OPM Rule or Proposed Rule with a safe title was returned."
+    policy_text_reason = (
+        f"No unique Rule or Proposed Rule with document number {document_number} was present in the fresh OPM metadata response; "
+        "no GovInfo text request was made."
+        if selection_failure else "No recent OPM Rule or Proposed Rule with a safe title was returned."
+    )
+    text_request_attempted = False
     if metadata_record is not None:
         try:
+            text_request_attempted = True
             text_record = fetch_govinfo_opm_text(metadata_record)
             text_paragraphs = _safe_policy_text(metadata_record, text_record)
+            section_reviews = _safe_section_reviews(metadata_record, text_record)
             policy_text_status = "VERIFIED_SOURCE"
             policy_text_reason = ""
         except LiveSourceError as error:
@@ -296,11 +383,19 @@ def run_live(
         excerpt = excerpt_source[:1200]
         selected_document = {
             "document_number": metadata_record.source_id,
-            "title": metadata_record.data["title"],
+            "source_id": metadata_record.source_id,
             "document_type": metadata_record.data["type"],
             "publication_date": metadata_record.as_of,
+            "metadata_response_status": metadata_record.response_status,
+            "metadata_response_sha256": metadata_record.response_sha256,
+            "metadata_retrieved_at_utc": metadata_record.retrieved_at_utc,
+            "federal_register_terms_url": metadata_record.terms_url,
+            "text_response_sha256": text_record.response_sha256,
+            "text_retrieved_at_utc": text_record.retrieved_at_utc,
+            "text_terms_url": text_record.terms_url,
             "text_excerpt": excerpt,
             "excerpt_truncated": len(excerpt_source) > len(excerpt),
+            "sections": section_reviews,
             "citations": [text_evidence_id],
         }
         text_evidence = {
@@ -340,11 +435,15 @@ def run_live(
             "source_id": metadata_record.source_id,
             "status": policy_text_status,
             "reason": policy_text_reason,
-        } if metadata_record is not None and text_record is None else None),
+        } if text_request_attempted and metadata_record is not None and text_record is None else None),
         "provider": source.provider,
         "request_url": source.request_url,
         "task_result": {
-            "status": "PUBLIC_OPM_POLICY_TEXT_REVIEW_ONLY" if text_record else "PUBLIC_OPM_METADATA_DISCOVERY_ONLY",
+            "status": (
+                "PUBLIC_OPM_POLICY_TEXT_REVIEW_ONLY" if text_record else
+                "PUBLIC_OPM_DOCUMENT_NOT_FOUND" if selection_failure else
+                "PUBLIC_OPM_METADATA_DISCOVERY_ONLY"
+            ),
             "documents": documents, "selected_document": selected_document, "answer": None,
             "limitation": "Federal Register text is a public-document review aid, not employer policy, legal advice, employee evidence, or permission proof.",
             "employee_records_loaded": False,
@@ -357,7 +456,15 @@ def run_live(
             *([policy_text_reason] if policy_text_reason else []),
         ],
         "risk": ["No employee access, employer policy answer, eligibility, hiring, or disciplinary decision is inferred from public text."],
-        "handoff": {"owner": "public-opm-policy-review-queue", "next_action": "A human reviewer should inspect the cited federal document; connect authorized employee records and applicable employer policy before answering a person."},
+        "handoff": {
+            "owner": "public-opm-policy-review-queue",
+            "next_action": (
+                "Choose a Rule or Proposed Rule document number from the current OPM metadata list; no GovInfo text was requested. "
+                "Connect authorized employee records and applicable employer policy before answering a person."
+                if selection_failure else
+                "A human reviewer should inspect the cited federal document; connect authorized employee records and applicable employer policy before answering a person."
+            ),
+        },
         "ai_status": ai["ai_status"], "ai_invoked": ai["ai_invoked"],
         "ai_output": ai["ai_output"], "ai_failure": ai["ai_failure"],
         "ai_handoff": ai["ai_handoff"], "ai_evidence": ai["ai_evidence"],
@@ -374,8 +481,16 @@ def run_live(
     }
 
 
-def main() -> int:
-    print(json.dumps(run_live(), indent=2, sort_keys=True))
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Review a public OPM Rule or Proposed Rule; employee-specific guidance stays unverified."
+    )
+    parser.add_argument(
+        "--document-number",
+        help="Select one Rule or Proposed Rule already present in the fresh OPM metadata response.",
+    )
+    arguments = parser.parse_args(argv)
+    print(json.dumps(run_live(document_number=arguments.document_number), indent=2, sort_keys=True))
     return 0
 
 

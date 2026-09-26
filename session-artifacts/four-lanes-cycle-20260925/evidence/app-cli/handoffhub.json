@@ -1,0 +1,136 @@
+{
+  "ai_completion_claim": false,
+  "ai_evidence": null,
+  "ai_invoked": false,
+  "ai_output": null,
+  "ai_status": "NON-AI / DETERMINISTIC PUBLIC-TEXT EXCERPT",
+  "evidence": [
+    {
+      "as_of": "2026-09-18",
+      "as_of_precision": "day",
+      "document_number": "2026-19222",
+      "document_text": [
+        "Comments must be received on or before November 17, 2026.",
+        "OFFICE OF PERSONNEL MANAGEMENT",
+        "5 CFR Parts 213, 302, 317, 359, 362, 432, 550, 731, 920, and 930",
+        "Employment in the Excepted Service",
+        "ACTION: Proposed rule.",
+        "-----------------------------------------------------------------------",
+        "DATES: Comments must be received on or before November 17, 2026.",
+        "SUPPLEMENTARY INFORMATION:"
+      ],
+      "document_type": "Proposed Rule",
+      "federal_register_terms_url": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site",
+      "metadata_request_url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bagency_ids%5D%5B%5D=406&per_page=10&order=newest",
+      "metadata_response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+      "publication_date": "2026-09-18",
+      "read_only": true,
+      "response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+      "retrieved_at_utc": "2026-09-26T01:50:43Z",
+      "source_id": "2026-19222",
+      "source_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222",
+      "terms": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site",
+      "text_excerpt": "Comments must be received on or before November 17, 2026.",
+      "text_excerpt_section": "DATES",
+      "text_response_sha256": "168c8590a7bcfd9121ffbb576fec15ca5d26aec69e9d166affb5a61db8e7f419",
+      "text_response_status": 200,
+      "text_retrieved_at_utc": "2026-09-26T01:50:44Z",
+      "text_sections": {
+        "DATES": [
+          "Comments must be received on or before November 17, 2026."
+        ]
+      },
+      "text_source_url": "https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+      "text_task_fit": "public_opm_policy_text",
+      "text_terms_url": "https://www.govinfo.gov/about/policies#copyright"
+    }
+  ],
+  "handoff": {
+    "context": "Review public Federal Register document 2026-19222 only.",
+    "next_action": "A human reviewer should verify the official edition and connect an authorized internal owner before any workplace handoff.",
+    "owner": "unassigned public-policy reviewer (role placeholder; no internal owner evidence)"
+  },
+  "integration_adapter": {
+    "external_write_capability": false,
+    "mode": "public OPM Rule/Proposed Rule text only",
+    "provider": "federal_register_opm",
+    "read_only": true,
+    "type": "suite_core.fetch_live + fetch_govinfo_opm_text"
+  },
+  "missing_sources": [
+    "authorized, permission-scoped internal knowledge records for the staff task",
+    "verified internal owner and next-action records; public OPM metadata does not identify these"
+  ],
+  "negative_checks": {
+    "forbidden_internal_document": {
+      "audit_event_count": 2,
+      "content_disclosed": false,
+      "status": "DENIED"
+    }
+  },
+  "policy_text_request_url": "https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+  "policy_text_status": "VERIFIED_SOURCE",
+  "project": "HandoffHub",
+  "provider": "federal_register_opm",
+  "request_url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bagency_ids%5D%5B%5D=406&per_page=10&order=newest",
+  "risk": [
+    "No employee access, internal policy, or private permission is inferred from a public document."
+  ],
+  "side_effect_count": 0,
+  "source_status": "VERIFIED_SOURCE",
+  "status": "VERIFIED_SOURCE",
+  "task_result": {
+    "answer": "Public OPM proposed rule 2026-19222 states: Comments must be received on or before November 17, 2026. [evidence:2026-19222]",
+    "citations": [
+      "2026-19222"
+    ],
+    "document_id": "2026-19222",
+    "documents": [
+      {
+        "as_of": "2026-09-18",
+        "as_of_precision": "day",
+        "document_number": "2026-19222",
+        "document_text": [
+          "Comments must be received on or before November 17, 2026.",
+          "OFFICE OF PERSONNEL MANAGEMENT",
+          "5 CFR Parts 213, 302, 317, 359, 362, 432, 550, 731, 920, and 930",
+          "Employment in the Excepted Service",
+          "ACTION: Proposed rule.",
+          "-----------------------------------------------------------------------",
+          "DATES: Comments must be received on or before November 17, 2026.",
+          "SUPPLEMENTARY INFORMATION:"
+        ],
+        "document_type": "Proposed Rule",
+        "federal_register_terms_url": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site",
+        "metadata_request_url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bagency_ids%5D%5B%5D=406&per_page=10&order=newest",
+        "metadata_response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+        "publication_date": "2026-09-18",
+        "read_only": true,
+        "response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+        "retrieved_at_utc": "2026-09-26T01:50:43Z",
+        "source_id": "2026-19222",
+        "source_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222",
+        "terms": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site",
+        "text_excerpt": "Comments must be received on or before November 17, 2026.",
+        "text_excerpt_section": "DATES",
+        "text_response_sha256": "168c8590a7bcfd9121ffbb576fec15ca5d26aec69e9d166affb5a61db8e7f419",
+        "text_response_status": 200,
+        "text_retrieved_at_utc": "2026-09-26T01:50:44Z",
+        "text_sections": {
+          "DATES": [
+            "Comments must be received on or before November 17, 2026."
+          ]
+        },
+        "text_source_url": "https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+        "text_task_fit": "public_opm_policy_text",
+        "text_terms_url": "https://www.govinfo.gov/about/policies#copyright"
+      }
+    ],
+    "limitation": "Public OPM rule text is not internal knowledge, proof of workplace permission, or an approved employer policy.",
+    "status": "SUPPORTED PUBLIC-TEXT SLICE"
+  },
+  "uncertainty": [
+    "Public OPM text was retrieved; no internal records or organizational permission evidence were queried."
+  ],
+  "workflow_status": "UNVERIFIED \u2014 internal knowledge, workplace permissions, and real owner records are unavailable"
+}

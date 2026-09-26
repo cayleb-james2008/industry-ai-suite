@@ -1,0 +1,111 @@
+{
+  "adapter": "suite_core.fetch_live (fixed portfolio GET, bounded visible text, read-only)",
+  "ai_evidence": null,
+  "ai_invoked": false,
+  "ai_status": "NOT RUN / DETERMINISTIC STRUCTURAL REVIEW",
+  "ai_verification_basis": "No app-reported AI call exists; AI execution remains unverified.",
+  "ai_verification_status": "UNVERIFIED",
+  "app": "SearchLift",
+  "app_reported_status": "VERIFIED_SOURCE",
+  "app_slug": "searchlift",
+  "evidence": [
+    {
+      "as_of_precision": "second",
+      "evidence_id": "SL-SRC-823863169a",
+      "facts": {
+        "approved_workflow_mentions": 10,
+        "approved_workflows_expected": 10,
+        "description_characters": 126,
+        "heading_count": 20,
+        "paragraph_count": 30,
+        "title_characters": 40,
+        "visible_words": 342
+      },
+      "provider": "own_portfolio_html",
+      "read_only": true,
+      "request_body_sha256": null,
+      "response_status": 200,
+      "retrieved_at_utc": "2026-09-26T01:48:13Z",
+      "source_as_of": "2026-09-25T20:46:10Z",
+      "source_hash": "710342618481919dee6f72f0e3cf5ac335aa60a6d0784015162b75fd7c46a118",
+      "source_id": "cayleb-james2008.github.io:/agentic-resume/",
+      "source_url": "https://cayleb-james2008.github.io/agentic-resume/",
+      "task_fit": "own_public_portfolio_content",
+      "terms_url": "https://api.github.com/licenses/mit"
+    }
+  ],
+  "handoff": {
+    "next_action": "Review the source-linked findings and drafts; any content change requires a separate human publishing decision.",
+    "owner": "portfolio-content-owner"
+  },
+  "model_route_probe": {
+    "available": false,
+    "models": [],
+    "reason": "no --ai-url supplied",
+    "route": null
+  },
+  "result": {
+    "draft_notice": "Drafts are suggestions for human review; no file was edited or published.",
+    "issue_count": 0,
+    "issues": [],
+    "name_coverage": {
+      "count": "10/10",
+      "coverage_note": "Counts distinct approved names in the bounded parser projection only; omitted or truncated page content was not assessed.",
+      "fields_checked": [
+        "title",
+        "meta description",
+        "heading text",
+        "paragraph text"
+      ],
+      "limits": {
+        "maximum_characters_per_captured_item": 1000,
+        "maximum_headings": 20,
+        "maximum_paragraphs": 30
+      },
+      "names_observed": [
+        "LedgerBridge",
+        "MarketBrief",
+        "ChainWatch",
+        "BacktestGuard",
+        "ReplyCraft",
+        "HandoffHub",
+        "PipelineRelay",
+        "OnboardPath",
+        "SentinelDesk",
+        "SearchLift"
+      ],
+      "verdict": "PASS"
+    },
+    "pages_reviewed": 1,
+    "priority_counts": {
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    }
+  },
+  "risk": {
+    "explanation": "Findings are structural checks against bounded returned text, not a search-ranking prediction.",
+    "level": "LOW",
+    "uncertainty": "Only the returned title, meta description, headings, and paragraphs were inspected. Traffic, rankings, links, images, analytics, and real-user outcomes were not measured."
+  },
+  "side_effect_count": 0,
+  "source": {
+    "as_of": "2026-09-25T20:46:10Z",
+    "as_of_precision": "second",
+    "provider": "own_portfolio_html",
+    "read_only": true,
+    "request_body_sha256": null,
+    "response_sha256": "710342618481919dee6f72f0e3cf5ac335aa60a6d0784015162b75fd7c46a118",
+    "response_status": 200,
+    "retrieved_at_utc": "2026-09-26T01:48:13Z",
+    "source_id": "cayleb-james2008.github.io:/agentic-resume/",
+    "source_url": "https://cayleb-james2008.github.io/agentic-resume/",
+    "task_fit": "own_public_portfolio_content",
+    "terms_url": "https://api.github.com/licenses/mit"
+  },
+  "source_hash": null,
+  "source_status": "VERIFIED_SOURCE",
+  "status": "UNVERIFIED",
+  "workflow_reason": "The complete task and independently verified AI contribution remain unverified.",
+  "workflow_status": "UNVERIFIED"
+}

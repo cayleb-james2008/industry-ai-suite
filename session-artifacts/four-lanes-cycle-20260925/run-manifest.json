@@ -1,0 +1,669 @@
+{
+  "schema_version": "1.2",
+  "schema_high_water": "1.2",
+  "run_id": "four-lanes-cycle-20260925",
+  "goal": "Lane 2: verify ten Industry AI Suite app journeys, deepen only the three weakest public-data slices truthfully, and align the r\u00e9sum\u00e9/portfolio copy with current verified evidence; no publication",
+  "rung": "full",
+  "caps": "normal",
+  "allow_homogeneous": false,
+  "vnext": true,
+  "created_at_utc": "2026-09-26T01:16:31Z",
+  "intake": {
+    "goal": "Lane 2: verify ten Industry AI Suite app journeys, deepen only the three weakest public-data slices truthfully, and align the r\u00e9sum\u00e9/portfolio copy with current verified evidence; no publication",
+    "present_state": "industry-ai-suite HEAD 1122d8a615b70a7225ac0993577817c1d05c91a6 clean at intake; prior cycle index reports 317 tests but not fresh in this run. agentic-resume HEAD 2571fb04be6931223068456384f97c71b8aba9aa with a pre-existing .gitignore modification and untracked resume/__pycache__/ preserved untouched. Both repository READMEs and suite contracts read.",
+    "success_measure": "Fresh execution of run_all.py and doctor plus ten separate user-path receipts with accurate source and AI labels; three weakest slices either gain a real permitted public-data workflow or remain explicitly blocked without private inputs; current public site claims are reconciled in local source only; any changed local routes build and resolve; no push, PR, deploy, or publish."
+  },
+  "prior_work": {
+    "prior_verified": "Prior run index at /home/cayleb/Work/session-artifacts/four-lanes-cycle-20260925/index.md records suite 1122d8a and 317 tests, live Pages revision 2571fb0, and inherited route evidence. Suite README/CONTRACT/LIVE-SOURCE-CONTRACT hashes at intake: 9a6802a7eb58f8f708d1b965af1f0fef20a3af87dc76ead6ac0414888d367732, d07e17ebd148a426e7b75a2baa54de521d06208077640789eb2988fbfab83175, e13e70d8c8045107e75548193d5f240b2b8f97cb51ea2047fff1fe512e98df1d. Prior run portfolio-suite-finish-20260923/lead/AI-EXECUTION-VERIFICATION-20260924.md verified witnessed transport for LedgerBridge, MarketBrief, BacktestGuard and SentinelDesk only. Current portfolio HEAD 2571fb04be6931223068456384f97c71b8aba9aa; pre-existing .gitignore edit and resume/__pycache__ are preserved.",
+    "inherits": "Ten-app source contracts, read-only public-source policy, honest WIP/UNVERIFIED and AI witness rules; prior witnessed-call evidence is limited to four apps; portfolio remains local at the recorded commit, with existing uncommitted state preserved.",
+    "supersedes": "Prior suite test count, per-app readiness summaries, SearchLift coverage descriptions, and site-claim summaries as current-cycle verification; only fresh receipts from this run may replace them. No existing live/public revision changes.",
+    "recorded_at_utc": "2026-09-26T01:16:47Z"
+  },
+  "spec_kernel": {
+    "spec_path": "/home/cayleb/Work/projects/industry-ai-suite/session-artifacts/four-lanes-cycle-20260925/specs/spec-lane2-portfolio/SPEC.md",
+    "capability_count": 4,
+    "capability_ids": [
+      "CAP-1",
+      "CAP-2",
+      "CAP-3",
+      "CAP-4"
+    ],
+    "companions": [
+      "baseline-and-proof.md"
+    ],
+    "sources": [],
+    "memlog_path": "/home/cayleb/Work/projects/industry-ai-suite/session-artifacts/four-lanes-cycle-20260925/specs/spec-lane2-portfolio/.memlog.md",
+    "stories_path": null,
+    "law_check": "PASS",
+    "spec_sha256": "ea4b46c768bc36a10cb4f11151bd8734ab44844bcfedae3d7f7bfb1877befb10",
+    "sealed_at_utc": "2026-09-26T01:32:24Z"
+  },
+  "spec_drifted": false,
+  "bar_path": "/home/cayleb/Work/projects/industry-ai-suite/session-artifacts/four-lanes-cycle-20260925/bar.md",
+  "bar_sha256": "b0a4455998b2fb36eec419da8afca8f5bc99c814cab3ab918591929ef7ce1606",
+  "pieces": [
+    {
+      "name": "R1",
+      "owner": "gauntlet_researcher",
+      "rounds": 0,
+      "verdict": null,
+      "outputs": [],
+      "writable": [
+        "session-artifacts/four-lanes-cycle-20260925/evidence/mempool-source-review.md"
+      ],
+      "budgets": {
+        "rounds": 1,
+        "steps": 120,
+        "wall_clock_min": 60,
+        "tool_calls_max": 120
+      },
+      "guard_results": {},
+      "dod": {
+        "run_id": "four-lanes-cycle-20260925",
+        "piece": "R1",
+        "agent": "gauntlet_researcher",
+        "dod_checklist": [
+          "official Mempool terms and My First Bitcoin target evidence reviewed",
+          "current docs-reader limitation recorded",
+          "researcher UNVERIFIED finding preserved",
+          "lead narrow source decision recorded with one GET and no reuse-license claim"
+        ],
+        "outputs": [
+          "session-artifacts/four-lanes-cycle-20260925/evidence/mempool-source-review.md"
+        ],
+        "evidence": "session-artifacts/four-lanes-cycle-20260925/evidence/mempool-source-review.md",
+        "timestamp_utc": "2026-09-26T02:37:07Z"
+      },
+      "rounds_detail": [
+        {
+          "round": 1,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 0.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.0,
+          "defect_count": 1,
+          "contract_verdict": "pass",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/R1-critic-text.md",
+          "worker_session": "ses_f2477ad03ffeAdKxptJ2fbXiFP",
+          "critic_session": "ses_f246b3744ffed549ETCAGE8EWO",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        }
+      ]
+    },
+    {
+      "name": "D1",
+      "owner": "gauntlet_worker",
+      "rounds": 0,
+      "verdict": "refuted",
+      "outputs": [],
+      "writable": [
+        "apps/chainwatch/**",
+        "suite_core/sources/core.py",
+        "suite_core/sources/mempool.py",
+        "suite_core/live_sources.py",
+        "tests/test_live_sources.py",
+        "tests/test_ten_live_contract.py",
+        "LIVE-SOURCE-CONTRACT.md",
+        "README.md"
+      ],
+      "budgets": {
+        "rounds": 3,
+        "steps": 600,
+        "wall_clock_min": 240,
+        "tool_calls_max": 600
+      },
+      "guard_results": {},
+      "bailout": {
+        "run_id": "four-lanes-cycle-20260925",
+        "piece": "D1",
+        "agent": "lead",
+        "reason_code": "BLOCKED_EXTERNAL_DEPENDENCY",
+        "explanation": "Current Mempool API documentation could not be freshly verified; the independent researcher returned UNVERIFIED, the blind text critic endorsed the no-use path, and the scoring critic returned bar fail. The current ToS covers API services but does not establish this exact automated endpoint use. The single prior GET is response evidence only and is not permission. No source code changed; ChainWatch stays no-request and UNVERIFIED.",
+        "evidence": "session-artifacts/four-lanes-cycle-20260925/evidence/mempool-source-review.md",
+        "timestamp_utc": "2026-09-26T02:54:51Z"
+      },
+      "verdict_contract": "fail",
+      "verdict_bar": "refuted"
+    },
+    {
+      "name": "D2",
+      "owner": "gauntlet_worker",
+      "rounds": 0,
+      "verdict": null,
+      "outputs": [],
+      "writable": [
+        "apps/pipelinerelay/**",
+        "README.md"
+      ],
+      "budgets": {
+        "rounds": 3,
+        "steps": 350,
+        "wall_clock_min": 150,
+        "tool_calls_max": 350
+      },
+      "guard_results": {},
+      "dod": {
+        "run_id": "four-lanes-cycle-20260925",
+        "piece": "D2",
+        "agent": "gauntlet_worker",
+        "dod_checklist": [
+          "default and custom live paths verified",
+          "invalid inputs cause no request",
+          "source identity and license mismatches fail closed",
+          "updated_at age limitation is explicit",
+          "account consent and outreach remain unverified",
+          "app tests compile diff check and thermo review pass"
+        ],
+        "outputs": [
+          "apps/pipelinerelay/flow.py",
+          "apps/pipelinerelay/tests/test_flow.py",
+          "apps/pipelinerelay/README.md",
+          "session-artifacts/four-lanes-cycle-20260925/pieces/D2-thermo-self-review.md"
+        ],
+        "evidence": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/pipelinerelay/tests -p 'test*.py' -v: 16/16 OK; python3 -m py_compile apps/pipelinerelay/flow.py apps/pipelinerelay/tests/test_flow.py: exit 0; git diff --check: exit 0; CLI help: exit 0; default live pytest-dev/pytest: VERIFIED_SOURCE HTTP 200 id 37489525 MIT terms https://api.github.com/licenses/mit response SHA a66e3ba07beccf2c5bfb3674ad2f03ddbfd840a721cf79654f85d52c551ade94 as-of 2026-09-25T23:52:27Z; custom live pallets/flask: VERIFIED_SOURCE HTTP 200 id 596892 BSD-3-Clause terms https://api.github.com/licenses/bsd-3-clause response SHA 0f9bced7279ffeb0d8350bffc4f33a15a83ec351abaa365a55d340a0725c0702 as-of 2026-09-26T02:34:19Z; python/cpython UNVERIFIED for missing license; no AI CRM outreach or publication; receipt session-artifacts/four-lanes-cycle-20260925/pieces/D2-thermo-self-review.md",
+        "timestamp_utc": "2026-09-26T03:14:01Z"
+      },
+      "scope_diffs": [
+        {
+          "label": "post-D2",
+          "changed_files": [
+            "apps/pipelinerelay/README.md",
+            "apps/pipelinerelay/flow.py",
+            "apps/pipelinerelay/tests/test_flow.py",
+            "session-artifacts/four-lanes-cycle-20260925/_snapshots/pre-D2.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.lock",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.lock",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/messages.jsonl",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.lock",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D2-dod.json",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D2-thermo-self-review.md",
+            "session-artifacts/four-lanes-cycle-20260925/run-manifest.json",
+            "session-artifacts/four-lanes-cycle-20260925/telemetry/recall-log.jsonl"
+          ],
+          "scope_violations": []
+        }
+      ],
+      "rounds_detail": [
+        {
+          "round": 1,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 1.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.2,
+          "defect_count": 1,
+          "contract_verdict": "fail",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/D2-critic-r1.md",
+          "worker_session": "ses_f2458d5a8ffedqacthmDdlZ97L",
+          "critic_session": "ses_f2444a2e4ffePMTmjXKadL2TAu",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        },
+        {
+          "round": 2,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 0.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.0,
+          "defect_count": 14,
+          "contract_verdict": "pass",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/D2-critic-r2.md",
+          "worker_session": "ses_f2458d5a8ffedqacthmDdlZ97L",
+          "critic_session": "ses_f243752b1ffeBUo9tLBlOnK6XB",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        }
+      ]
+    },
+    {
+      "name": "D3",
+      "owner": "gauntlet_worker",
+      "rounds": 0,
+      "verdict": null,
+      "outputs": [],
+      "writable": [
+        "apps/backtestguard/**"
+      ],
+      "budgets": {
+        "rounds": 3,
+        "steps": 350,
+        "wall_clock_min": 150,
+        "tool_calls_max": 350
+      },
+      "guard_results": {},
+      "dod": {
+        "run_id": "four-lanes-cycle-20260925",
+        "piece": "D3",
+        "agent": "gauntlet_worker",
+        "dod_checklist": [
+          "default split preserved",
+          "valid cutoff 2018 uses the actual observation year",
+          "invalid boundary and missing-year cutoffs fail closed",
+          "training and holdout partitions are disjoint",
+          "future-year leakage and UNVERIFIED experiment target and release-time limits retained",
+          "existing app tests preserved",
+          "thermo self-review PASS",
+          "no trade AI performance or strategy execution added"
+        ],
+        "outputs": [
+          "apps/backtestguard/flow.py",
+          "apps/backtestguard/__main__.py",
+          "apps/backtestguard/test_backtestguard.py",
+          "apps/backtestguard/README.md",
+          "session-artifacts/four-lanes-cycle-20260925/pieces/D3-thermo-self-review.md"
+        ],
+        "evidence": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/backtestguard -p 'test_*.py' -v: 15/15 OK; changed Python py_compile exit 0; git diff --check exit 0; --help exit 0; real World Bank default and cutoff 2018 exit 0 with 15 records and response SHA-256 2e54d1e502eae38a14474323ff0a3353c2f5d711c00009c41f4d752f99fedce3; real World Bank invalid cutoffs 2010 2025 2026 each DATA_UNAVAILABLE JSON exit 2 with no substitute; thermo review PASS",
+        "timestamp_utc": "2026-09-26T04:06:46Z"
+      },
+      "scope_diffs": [
+        {
+          "label": "post-D3",
+          "changed_files": [
+            "apps/backtestguard/README.md",
+            "apps/backtestguard/__main__.py",
+            "apps/backtestguard/flow.py",
+            "apps/backtestguard/test_backtestguard.py",
+            "session-artifacts/four-lanes-cycle-20260925/_snapshots/pre-D3.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.lock",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.lock",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/messages.jsonl",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.lock",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D3-dod.json",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D3-thermo-self-review.md",
+            "session-artifacts/four-lanes-cycle-20260925/run-manifest.json",
+            "session-artifacts/four-lanes-cycle-20260925/telemetry/recall-log.jsonl"
+          ],
+          "scope_violations": []
+        }
+      ],
+      "rounds_detail": [
+        {
+          "round": 1,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 0.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.0,
+          "defect_count": 1,
+          "contract_verdict": "fail",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/D3-critic-r1.md",
+          "worker_session": "ses_f24260ba4ffeGy6lM18Seg91mJ",
+          "critic_session": "ses_f24187599ffe3smHcC3fZPS0BN",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        },
+        {
+          "round": 2,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 0.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.0,
+          "defect_count": 0,
+          "contract_verdict": "pass",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/D3-critic-r2.md",
+          "worker_session": "ses_f24260ba4ffeGy6lM18Seg91mJ",
+          "critic_session": "ses_f240f725bffesQu3O23J3f8Lir",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        }
+      ]
+    },
+    {
+      "name": "D4",
+      "owner": "gauntlet_worker",
+      "rounds": 0,
+      "verdict": null,
+      "outputs": [],
+      "writable": [
+        "agentic-resume/index.html",
+        "agentic-resume/resume.html",
+        "agentic-resume/projects/chainwatch.html",
+        "agentic-resume/projects/backtestguard.html",
+        "agentic-resume/projects/replycraft.html",
+        "agentic-resume/projects/handoffhub.html",
+        "agentic-resume/projects/pipelinerelay.html",
+        "agentic-resume/projects/onboardpath.html",
+        "agentic-resume/resume/resume.md",
+        "agentic-resume/Cayleb-James-resume.pdf",
+        "session-artifacts/four-lanes-cycle-20260925/pieces/D4-brief.md",
+        "session-artifacts/four-lanes-cycle-20260925/pieces/D4-copy-change-ledger.md",
+        "session-artifacts/four-lanes-cycle-20260925/pieces/D4-thermo-self-review.md",
+        "session-artifacts/four-lanes-cycle-20260925/pieces/D4-ux-audit.md"
+      ],
+      "budgets": {
+        "rounds": 3,
+        "steps": 350,
+        "wall_clock_min": 120,
+        "tool_calls_max": 350
+      },
+      "guard_results": {}
+    },
+    {
+      "name": "D5",
+      "owner": "gauntlet_worker",
+      "rounds": 0,
+      "verdict": "refuted",
+      "outputs": [],
+      "writable": [
+        "apps/onboardpath/**",
+        "session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md"
+      ],
+      "budgets": {
+        "rounds": 3,
+        "steps": 350,
+        "wall_clock_min": 150,
+        "tool_calls_max": 350
+      },
+      "guard_results": {},
+      "bailout": {
+        "run_id": "four-lanes-cycle-20260925",
+        "piece": "D5",
+        "agent": "gauntlet_worker",
+        "reason_code": "IMPOSSIBLE_CONTRADICTION",
+        "explanation": "D5 contract says write only within apps/onboardpath/**, but the required thermo self-review must be saved at session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md outside that writable scope. Worker scope rules require stopping rather than writing outside scope; no implementation edits made.",
+        "evidence": "D5-onboardpath.md:9 limits writes to apps/onboardpath/{flow.py,__main__.py,tests/test_flow.py,README.md}; user requirement also explicitly mandates saving D5-thermo-self-review.md under session-artifacts/four-lanes-cycle-20260925/pieces/",
+        "timestamp_utc": "2026-09-26T04:36:46Z"
+      },
+      "verdict_contract": "fail",
+      "verdict_bar": "refuted",
+      "dod": {
+        "run_id": "four-lanes-cycle-20260925",
+        "piece": "D5",
+        "agent": "gauntlet_worker",
+        "dod_checklist": [
+          "Federal Register record response_status validated as HTTP 200 and projected with exact response hash; selected_document exposes metadata_response_status and hash; regression assertions cover both projections and reject non-200 status; all 19 OnboardPath tests pass; py_compile and git diff --check pass; no network/source path or employee/AI/action boundary change"
+        ],
+        "outputs": [
+          "apps/onboardpath/flow.py",
+          "apps/onboardpath/tests/test_flow.py",
+          "session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md"
+        ],
+        "evidence": "session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md",
+        "timestamp_utc": "2026-09-26T05:26:52Z"
+      },
+      "scope_diffs": [
+        {
+          "label": "post-D5-r2",
+          "changed_files": [
+            "apps/onboardpath/README.md",
+            "apps/onboardpath/flow.py",
+            "apps/onboardpath/tests/test_flow.py",
+            "session-artifacts/four-lanes-cycle-20260925/_snapshots/pre-D5-r2.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.lock",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.lock",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/messages.jsonl",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.lock",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D5-dod.json",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md",
+            "session-artifacts/four-lanes-cycle-20260925/run-manifest.json",
+            "session-artifacts/four-lanes-cycle-20260925/telemetry/recall-log.jsonl"
+          ],
+          "scope_violations": []
+        },
+        {
+          "label": "post-D5-round2",
+          "changed_files": [
+            "apps/onboardpath/README.md",
+            "apps/onboardpath/flow.py",
+            "apps/onboardpath/tests/test_flow.py",
+            "session-artifacts/four-lanes-cycle-20260925/_snapshots/pre-D5-r2.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.json",
+            "session-artifacts/four-lanes-cycle-20260925/claims/claims.lock",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead-verification.md",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead/default.json",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead/malformed.json",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead/selected-2026-18828.json",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead/selected-2026-18944.json",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead/selected-2026-19222.json",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead/tests.txt",
+            "session-artifacts/four-lanes-cycle-20260925/evidence/d5-lead/unmatched-2026-99999.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/agents.lock",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/messages.jsonl",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.json",
+            "session-artifacts/four-lanes-cycle-20260925/mailbox/threads.lock",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D5-critic-r1.md",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D5-critic-scoring-r1.json",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D5-dod.json",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D5-onboardpath.md",
+            "session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md",
+            "session-artifacts/four-lanes-cycle-20260925/run-manifest.json",
+            "session-artifacts/four-lanes-cycle-20260925/telemetry/recall-log.jsonl"
+          ],
+          "scope_violations": []
+        }
+      ],
+      "rounds_detail": [
+        {
+          "round": 1,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 0.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.0,
+          "defect_count": 1,
+          "contract_verdict": "pass",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/D5-critic-r1.md",
+          "worker_session": "ses_f23f93b93ffe9dE3rdeZrtet5q",
+          "critic_session": "ses_f23e1ab8bffeJQvtsYnitJP1WO",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        },
+        {
+          "round": 2,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 0.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.0,
+          "defect_count": 1,
+          "contract_verdict": "fail",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/D5-critic-r2.md",
+          "worker_session": "ses_f23d6ab14fferJMJ1ao2k5FvYf",
+          "critic_session": "ses_f23e1ab8bffeJQvtsYnitJP1WO",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        },
+        {
+          "round": 3,
+          "critic_model": "openai/gpt-6-luna",
+          "critic_temperature": 0.0,
+          "scoring_model": "openai/gpt-6-luna",
+          "scoring_temperature": 0.0,
+          "worker_model": "openai/gpt-6-luna",
+          "scores": {
+            "D1": 0.0,
+            "D2": 0.0,
+            "D3": 0.0,
+            "D4": 0.0,
+            "D5": 0.0
+          },
+          "score_mean": 0.0,
+          "defect_count": 0,
+          "contract_verdict": "pass",
+          "bar_verdict": "fail",
+          "critic_verdict_path": "session-artifacts/four-lanes-cycle-20260925/pieces/D5-critic-r3.md",
+          "worker_session": "ses_f23d6ab14fferJMJ1ao2k5FvYf",
+          "critic_session": "ses_f23c4344effeoSi6SUP26PgOeW",
+          "critic_blind": true,
+          "critic_readonly": true,
+          "peer_verdict_seen": false,
+          "shared_scratch": false
+        }
+      ]
+    }
+  ],
+  "verdicts": {
+    "contract": null,
+    "bar": null
+  },
+  "metrics_path": null,
+  "checkpoints": [],
+  "continuations": [],
+  "heal_events": [],
+  "lessons_injected": {
+    "ids": [],
+    "count": 0,
+    "tokens": 63,
+    "cap": 1200,
+    "estimator": "ceil(UTF-8 bytes / 4)",
+    "enabled": true
+  },
+  "next_action": "",
+  "next_action_utc": null,
+  "cleanup_evidence": [],
+  "bailouts": [
+    {
+      "run_id": "four-lanes-cycle-20260925",
+      "piece": "D1",
+      "agent": "lead",
+      "reason_code": "BLOCKED_EXTERNAL_DEPENDENCY",
+      "explanation": "Current Mempool API documentation could not be freshly verified; the independent researcher returned UNVERIFIED, the blind text critic endorsed the no-use path, and the scoring critic returned bar fail. The current ToS covers API services but does not establish this exact automated endpoint use. The single prior GET is response evidence only and is not permission. No source code changed; ChainWatch stays no-request and UNVERIFIED.",
+      "evidence": "session-artifacts/four-lanes-cycle-20260925/evidence/mempool-source-review.md",
+      "timestamp_utc": "2026-09-26T02:54:51Z"
+    },
+    {
+      "run_id": "four-lanes-cycle-20260925",
+      "piece": "D5",
+      "agent": "gauntlet_worker",
+      "reason_code": "IMPOSSIBLE_CONTRADICTION",
+      "explanation": "D5 contract says write only within apps/onboardpath/**, but the required thermo self-review must be saved at session-artifacts/four-lanes-cycle-20260925/pieces/D5-thermo-self-review.md outside that writable scope. Worker scope rules require stopping rather than writing outside scope; no implementation edits made.",
+      "evidence": "D5-onboardpath.md:9 limits writes to apps/onboardpath/{flow.py,__main__.py,tests/test_flow.py,README.md}; user requirement also explicitly mandates saving D5-thermo-self-review.md under session-artifacts/four-lanes-cycle-20260925/pieces/",
+      "timestamp_utc": "2026-09-26T04:36:46Z"
+    }
+  ],
+  "bar_drifted": false,
+  "vnext_block": {
+    "version": "vnext/1",
+    "run_id": "four-lanes-cycle-20260925",
+    "goal": "Lane 2: verify ten Industry AI Suite app journeys, deepen only the three weakest public-data slices truthfully, and align the r\u00e9sum\u00e9/portfolio copy with current verified evidence; no publication",
+    "lifecycle": {
+      "state": "INTAKE",
+      "history": [
+        {
+          "state": "INTAKE",
+          "at_utc": "2026-09-26T01:16:31Z"
+        }
+      ]
+    },
+    "journal": [
+      {
+        "seq": 0,
+        "at_utc": "2026-09-26T01:16:31Z",
+        "type": "run.init",
+        "payload": {
+          "run_id": "four-lanes-cycle-20260925",
+          "goal": "Lane 2: verify ten Industry AI Suite app journeys, deepen only the three weakest public-data slices truthfully, and align the r\u00e9sum\u00e9/portfolio copy with current verified evidence; no publication"
+        },
+        "prev_hash": "GENESIS",
+        "hash": "29a211057ca0c8277feb0894b7b43399aa0f5bfe122d5d3448c04038fb2040cc"
+      }
+    ],
+    "budget": {
+      "total": 0,
+      "spent": 0,
+      "reserved": 0
+    },
+    "recovery": {
+      "clarifications_used": 0,
+      "infra_retries_used": 0
+    },
+    "tickets": [],
+    "attempts": []
+  },
+  "bar_sealed_at_utc": "2026-09-26T01:43:56Z"
+}

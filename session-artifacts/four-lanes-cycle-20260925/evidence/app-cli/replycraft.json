@@ -1,0 +1,74 @@
+{
+  "ai_completion_claim": false,
+  "ai_invoked": false,
+  "ai_output": null,
+  "ai_status": "NON-AI / DETERMINISTIC PUBLIC-POLICY SAMPLE",
+  "approval_endpoint": "human-review-only; no message-send capability",
+  "evidence": [
+    {
+      "as_of": "2026-09-18",
+      "as_of_precision": "day",
+      "read_only": true,
+      "response_sha256": "e48bfc08f7e03a06a7feba8fe2d23becd18152a18da6e4735473243ce3e62b3f",
+      "response_status": 200,
+      "retrieved_at_utc": "2026-09-26T01:50:43Z",
+      "source_id": "2026-19222",
+      "source_url": "https://www.federalregister.gov/documents/2026/09/18/2026-19222",
+      "task_fit": "public_opm_policy_documents",
+      "terms_url": "https://www.federalregister.gov/reader-aids/government-policy-and-ofr-procedures/about-this-site"
+    },
+    {
+      "as_of": "2026-09-18",
+      "as_of_precision": "day",
+      "read_only": true,
+      "response_sha256": "11561938be7c7c154705776c784ed504a80eef5404a72760955086ec1954d51a",
+      "response_status": 200,
+      "retrieved_at_utc": "2026-09-26T01:50:43Z",
+      "source_id": "2026-19222",
+      "source_url": "https://www.govinfo.gov/content/pkg/FR-2026-09-18/html/2026-19222.htm",
+      "task_fit": "public_opm_policy_text",
+      "terms_url": "https://www.govinfo.gov/about/policies#copyright"
+    }
+  ],
+  "handoff": {
+    "next_action": "A human reviewer must approve or revise this sample before any separate use; no send endpoint is enabled.",
+    "owner": "public-policy-review-queue (role placeholder; no individual owner verified)"
+  },
+  "integration_adapter": {
+    "read_only": true,
+    "send_capability": false,
+    "type": "suite_core.fetch_live + fetch_govinfo_opm_text"
+  },
+  "missing_sources": [
+    "consent-authorized customer support case",
+    "approved internal support policy"
+  ],
+  "policy_text_status": "VERIFIED_SOURCE",
+  "project": "ReplyCraft",
+  "request_url": "https://www.federalregister.gov/api/v1/documents.json?conditions%5Bagency_ids%5D%5B%5D=406&per_page=10&order=newest",
+  "risk": [
+    "No customer communication or account action is authorized or attempted."
+  ],
+  "send_attempted": false,
+  "side_effect_count": 0,
+  "source_status": "VERIFIED_SOURCE",
+  "status": "VERIFIED_SOURCE",
+  "task_result": {
+    "citations": [
+      "2026-19222#DATES"
+    ],
+    "customer_case": false,
+    "document_id": "2026-19222",
+    "draft": "Public-policy sample only: Comments must be received on or before November 17, 2026. [evidence:2026-19222#DATES]",
+    "human_approval_required_before_use": true,
+    "question": "SAMPLE QUESTION \u2014 By what date must the public submit comments on this OPM proposal?",
+    "sample_only": true,
+    "send_attempted": false,
+    "status": "PUBLIC_POLICY_QA_SAMPLE"
+  },
+  "uncertainty": [
+    "This is a sample about a public OPM proposal, not an individual customer or a company policy.",
+    "The Federal Register HTML source is informational; consult the official GovInfo edition for legal research."
+  ],
+  "workflow_status": "UNVERIFIED \u2014 public-policy sample only; customer support remains unverified"
+}

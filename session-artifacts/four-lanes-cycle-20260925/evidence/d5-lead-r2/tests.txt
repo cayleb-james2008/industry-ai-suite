@@ -1,0 +1,24 @@
+test_adversarial_stub_transport_denials_timeout_and_invalid_schema_do_not_fallback (test_flow.OnboardPathTests.test_adversarial_stub_transport_denials_timeout_and_invalid_schema_do_not_fallback) ... ok
+test_cli_accepts_document_number_option (test_flow.OnboardPathTests.test_cli_accepts_document_number_option) ... ok
+test_direct_metadata_projection_canonicalizes_slug_in_json_cli_and_handoff (test_flow.OnboardPathTests.test_direct_metadata_projection_canonicalizes_slug_in_json_cli_and_handoff) ... ok
+test_document_number_selects_exactly_one_rule_from_fresh_metadata (test_flow.OnboardPathTests.test_document_number_selects_exactly_one_rule_from_fresh_metadata) ... ok
+test_govinfo_identity_mismatch_is_not_exposed_as_selected_text (test_flow.OnboardPathTests.test_govinfo_identity_mismatch_is_not_exposed_as_selected_text) ... ok
+test_grounded_summary_uses_only_current_public_rule_text_and_its_id (test_flow.OnboardPathTests.test_grounded_summary_uses_only_current_public_rule_text_and_its_id) ... ok
+test_live_opm_public_rule_text_stays_limited_and_cited (test_flow.OnboardPathTests.test_live_opm_public_rule_text_stays_limited_and_cited) ... ok
+test_live_rule_text_failure_does_not_replace_it_with_metadata_or_fixtures (test_flow.OnboardPathTests.test_live_rule_text_failure_does_not_replace_it_with_metadata_or_fixtures) ... ok
+test_malformed_or_unmatched_document_does_not_request_govinfo_text (test_flow.OnboardPathTests.test_malformed_or_unmatched_document_does_not_request_govinfo_text) ... ok
+test_metadata_slug_is_absent_from_json_cli_and_witness_payload (test_flow.OnboardPathTests.test_metadata_slug_is_absent_from_json_cli_and_witness_payload) ... ok
+test_only_concrete_local_client_is_accepted (test_flow.OnboardPathTests.test_only_concrete_local_client_is_accepted) ... ok
+test_private_section_text_is_rejected_without_fixture_fallback (test_flow.OnboardPathTests.test_private_section_text_is_rejected_without_fixture_fallback) ... ok
+test_prompt_canary_injection_is_refused (test_flow.OnboardPathTests.test_prompt_canary_injection_is_refused) ... ok
+test_public_document_projection_omits_untrusted_title_and_keeps_provenance (test_flow.OnboardPathTests.test_public_document_projection_omits_untrusted_title_and_keeps_provenance) ... ok
+test_role_scoped_policy_answer_and_checklist (test_flow.OnboardPathTests.test_role_scoped_policy_answer_and_checklist) ... ok
+test_rule_text_requires_the_exact_parent_metadata_response_hash (test_flow.OnboardPathTests.test_rule_text_requires_the_exact_parent_metadata_response_hash) ... ok
+test_section_output_is_bounded_and_citations_are_stable (test_flow.OnboardPathTests.test_section_output_is_bounded_and_citations_are_stable) ... ok
+test_tenant_beta_json_and_csv_are_confined_and_hashed (test_flow.OnboardPathTests.test_tenant_beta_json_and_csv_are_confined_and_hashed) ... ok
+test_tenant_role_and_forged_claims_are_denied (test_flow.OnboardPathTests.test_tenant_role_and_forged_claims_are_denied) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.018s
+
+OK

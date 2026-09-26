@@ -1,7 +1,9 @@
+import io
 import json
 import secrets
 import time
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -13,13 +15,22 @@ from suite_core import (
 )
 from apps.pipelinerelay.flow import (
     ACCOUNT_EVIDENCE, ACTION, CONSENT_EVIDENCE, FIXTURES, ROLE, TENANT_B_CANARY,
-    _security_stack, run_demo, run_live,
+    PUBLIC_RESEARCH_OWNER, PUBLIC_RESEARCH_REPO, _security_stack, main, run_demo, run_live,
 )
 
 
-def _adversarial_github_source(*, license_info: dict[str, str] | None = None) -> SourceResult:
+def _adversarial_github_source(
+    *, license_info: dict[str, str] | None = None,
+    owner: str = PUBLIC_RESEARCH_OWNER, repo: str = PUBLIC_RESEARCH_REPO,
+    as_of: str = "2026-09-22T10:20:30Z",
+    retrieved_at: str = "2026-09-23T12:00:00Z",
+) -> SourceResult:
     """Synthetic repository metadata for adversarial tests only, never production data."""
-    url = "https://api.github.com/repos/pytest-dev/pytest"
+    url = f"https://api.github.com/repos/{owner}/{repo}"
+    selected_license = (
+        {"spdx_id": "MIT", "url": "https://api.github.com/licenses/mit"}
+        if license_info is None else license_info
+    )
     record = SourceRecord(
         provider=Provider.GITHUB_REPOSITORY.value,
         source_id="12277502",
@@ -27,18 +38,18 @@ def _adversarial_github_source(*, license_info: dict[str, str] | None = None) ->
         response_status=200,
         response_sha256="b" * 64,
         request_body_sha256=None,
-        as_of="2026-09-22T10:20:30Z",
+        as_of=as_of,
         as_of_precision="second",
-        retrieved_at_utc="2026-09-23T12:00:00Z",
-        terms_url=(license_info or {"url": "https://api.github.com/licenses/mit"}).get("url", ""),
+        retrieved_at_utc=retrieved_at,
+        terms_url=selected_license.get("url", ""),
         read_only=True,
         task_fit=TaskFit.PUBLIC_REPOSITORY_METADATA.value,
         data={
             "id": 12277502,
-            "full_name": "pytest-dev/pytest",
-            "html_url": "https://github.com/pytest-dev/pytest",
+            "full_name": f"{owner}/{repo}",
+            "html_url": f"https://github.com/{owner}/{repo}",
             "default_branch": "main",
-            "license": license_info or {"spdx_id": "MIT", "url": "https://api.github.com/licenses/mit"},
+            "license": selected_license,
         },
     )
     return SourceResult(
@@ -48,7 +59,7 @@ def _adversarial_github_source(*, license_info: dict[str, str] | None = None) ->
         response_status=200,
         response_sha256="b" * 64,
         request_body_sha256=None,
-        retrieved_at_utc="2026-09-23T12:00:00Z",
+        retrieved_at_utc=retrieved_at,
         task_fit=TaskFit.PUBLIC_REPOSITORY_METADATA.value,
         records=(record,),
     )
@@ -87,7 +98,9 @@ class PipelineRelayTests(unittest.TestCase):
         self.assertEqual(result["task_result"]["metadata"]["license_spdx_id"], "MIT")
         checks = result["task_result"]["review_checks"]
         self.assertEqual([check["status"] for check in checks], ["PASS", "PASS", "OBSERVED", "UNVERIFIED"])
-        self.assertEqual(checks[2]["days"], 1)
+        self.assertEqual(checks[2]["age_seconds"], 92370)
+        self.assertEqual(result["task_result"]["metadata"]["updated_at"], "2026-09-22T10:20:30Z")
+        self.assertIn("not proof of current code contents or activity", checks[2]["note"])
         self.assertEqual(checks[2]["evidence_ids"], ["github-repo-12277502"])
         self.assertFalse(complete.called)
         self.assertEqual(result["ai_status"], "NON-AI / DETERMINISTIC FALLBACK")
@@ -100,6 +113,120 @@ class PipelineRelayTests(unittest.TestCase):
         self.assertNotIn("consent_verified", exposed)
         self.assertNotIn("outreach_sent", exposed)
         self.assertNotIn("lead_id", exposed)
+
+    def test_default_repository_is_passed_to_the_shared_adapter(self):
+        with patch("apps.pipelinerelay.flow.fetch_live", return_value=_adversarial_github_source()) as fetch:
+            result = run_live()
+
+        fetch.assert_called_once_with(
+            Provider.GITHUB_REPOSITORY,
+            owner=PUBLIC_RESEARCH_OWNER,
+            repo=PUBLIC_RESEARCH_REPO,
+            task_fit=TaskFit.PUBLIC_REPOSITORY_METADATA,
+        )
+        self.assertEqual(result["task_result"]["metadata"]["full_name"], "pytest-dev/pytest")
+
+    def test_custom_repository_and_returned_spdx_terms_are_used(self):
+        license_info = {
+            "spdx_id": "PSF-2.0",
+            "url": "https://api.github.com/licenses/psf-2.0",
+        }
+        source = _adversarial_github_source(
+            owner="python", repo="cpython", license_info=license_info,
+        )
+        with patch("apps.pipelinerelay.flow.fetch_live", return_value=source) as fetch:
+            result = run_live(owner="python", repo="cpython")
+
+        fetch.assert_called_once_with(
+            Provider.GITHUB_REPOSITORY,
+            owner="python",
+            repo="cpython",
+            task_fit=TaskFit.PUBLIC_REPOSITORY_METADATA,
+        )
+        metadata = result["task_result"]["metadata"]
+        self.assertEqual(metadata["full_name"], "python/cpython")
+        self.assertEqual(metadata["license_spdx_id"], "PSF-2.0")
+        self.assertEqual(metadata["license_terms_url"], license_info["url"])
+        license_check = result["task_result"]["review_checks"][1]
+        self.assertEqual(license_check["spdx_id"], "PSF-2.0")
+        self.assertEqual(license_check["terms_url"], license_info["url"])
+
+    def test_partial_malformed_and_unsafe_repository_inputs_make_no_request(self):
+        cases = (
+            ("pytest-dev", None),
+            (None, "pytest"),
+            ("..", "pytest"),
+            ("owner/name", "pytest"),
+            ("pytest-dev", "pytest?tab=readme"),
+            ("https://api.github.com", "pytest"),
+            ("", "pytest"),
+        )
+        for owner, repo in cases:
+            with self.subTest(owner=owner, repo=repo):
+                with patch("apps.pipelinerelay.flow.fetch_live") as fetch:
+                    result = run_live(owner=owner, repo=repo)
+                fetch.assert_not_called()
+                self.assertEqual(result["status"], "UNVERIFIED")
+                self.assertFalse(result["integration_adapter"]["network_attempted"])
+                self.assertIn("no request was made", result["uncertainty"][0])
+
+    def test_cli_partial_repository_input_is_rejected_before_request(self):
+        output = io.StringIO()
+        with (
+            patch("apps.pipelinerelay.flow.fetch_live") as fetch,
+            redirect_stdout(output),
+        ):
+            exit_code = main(["--owner", "pytest-dev"])
+
+        fetch.assert_not_called()
+        self.assertEqual(exit_code, 1)
+        self.assertFalse(json.loads(output.getvalue())["integration_adapter"]["network_attempted"])
+
+    def test_source_repository_identity_mismatch_fails_closed(self):
+        source = _adversarial_github_source(owner="different-org", repo="other-repo")
+        with patch("apps.pipelinerelay.flow.fetch_live", return_value=source):
+            result = run_live()
+
+        self.assertEqual(result["status"], "DATA_UNAVAILABLE")
+        self.assertIsNone(result["task_result"])
+        self.assertIn("identity", result["uncertainty"][0])
+
+    def test_license_spdx_terms_mismatch_fails_closed(self):
+        source = _adversarial_github_source(license_info={
+            "spdx_id": "MIT",
+            "url": "https://api.github.com/licenses/apache-2.0",
+        })
+        with patch("apps.pipelinerelay.flow.fetch_live", return_value=source):
+            result = run_live()
+
+        self.assertEqual(result["status"], "UNVERIFIED")
+        self.assertIsNone(result["task_result"])
+        self.assertIn("SPDX", result["uncertainty"][0])
+
+    def test_missing_or_ambiguous_license_metadata_fails_closed(self):
+        for license_info in (
+            {},
+            {"spdx_id": "NOASSERTION", "url": "https://api.github.com/licenses/noassertion"},
+        ):
+            with self.subTest(license_info=license_info):
+                source = _adversarial_github_source(license_info=license_info)
+                with patch("apps.pipelinerelay.flow.fetch_live", return_value=source):
+                    result = run_live()
+                self.assertEqual(result["status"], "UNVERIFIED")
+                self.assertIsNone(result["task_result"])
+                self.assertEqual(result["side_effect_count"], 0)
+
+    def test_tolerated_future_timestamp_is_reported_as_negative_age(self):
+        source = _adversarial_github_source(
+            as_of="2026-09-23T12:02:00Z",
+            retrieved_at="2026-09-23T12:00:00Z",
+        )
+        with patch("apps.pipelinerelay.flow.fetch_live", return_value=source):
+            result = run_live()
+
+        self.assertEqual(result["status"], "VERIFIED_SOURCE")
+        self.assertEqual(result["task_result"]["metadata"]["updated_age_seconds"], -120)
+        self.assertEqual(result["task_result"]["review_checks"][2]["age_seconds"], -120)
 
     def test_adversarial_unavailable_github_never_falls_back_to_fixture_accounts(self):
         with patch("apps.pipelinerelay.flow.fetch_live", side_effect=DataUnavailable("HTTP 403")):

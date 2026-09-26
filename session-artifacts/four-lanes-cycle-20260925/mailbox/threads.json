@@ -1,0 +1,24 @@
+{
+  "main": {
+    "thread": "main",
+    "message_count": 11,
+    "topics": [
+      "sign-off",
+      "warning",
+      "plan",
+      "status"
+    ],
+    "last_activity_utc": "2026-09-26T05:26:52Z",
+    "last_agent": "gauntlet_worker"
+  },
+  "deconfliction": {
+    "thread": "deconfliction",
+    "message_count": 34,
+    "topics": [
+      "claim",
+      "release"
+    ],
+    "last_activity_utc": "2026-09-26T05:26:52Z",
+    "last_agent": "gauntlet_worker"
+  }
+}
