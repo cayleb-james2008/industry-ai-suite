@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102a38">
+  <meta name="workbench-token" content="__WORKBENCH_TOKEN__">
+  <title>Industry AI Suite — workbench</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workflow">Skip to workflow</a>
+  <header class="topbar">
+    <div class="topbar__brand"><span class="mark" aria-hidden="true">✳</span><span>Industry AI Suite</span><span class="topbar__edition">WORKBENCH / 01</span></div>
+    <div class="topbar__status"><span class="live-dot" aria-hidden="true"></span>LOCAL · READ ONLY</div>
+  </header>
+  <main class="shell">
+    <aside class="rail" aria-label="Suite navigation">
+      <div class="rail__intro"><p class="eyebrow">TEN DISTINCT WORKFLOWS</p><h1>Useful work.<br><em>Visible limits.</em></h1><p>Run a cited public source or bring your own authorized input. Inspect the result, then make the human decision.</p></div>
+      <nav aria-label="Choose a workflow"><div id="workflow-nav" class="workflow-nav"></div></nav>
+      <p class="rail__foot">No account, private feed, message, trade, or publication is connected. Inputs stay in this local process and are not saved.</p>
+    </aside>
+    <section id="workflow" class="workspace">
+      <div class="workspace__topline"><span id="category">PUBLIC DATA / HUMAN REVIEW</span><span id="index">01 / 10</span></div>
+      <div class="workspace__hero"><div><p id="signal" class="signal">01 · FINANCE OPERATIONS</p><h2 id="title">LedgerBridge</h2><p id="description" class="workspace__description"></p></div><div id="status-stamp" class="status-stamp">SOURCE → RESULT → REVIEW</div></div>
+      <div class="workflow-grid">
+        <section class="panel input-panel" aria-labelledby="input-heading"><div class="panel__header"><span class="step-number">01</span><div><p class="eyebrow">INPUT</p><h3 id="input-heading">Choose the evidence</h3></div></div><p id="input-help" class="panel__help"></p><form id="run-form" novalidate><div id="form-fields"></div><button id="run-button" class="button button--primary" type="submit">Run review <span aria-hidden="true">↗</span></button></form><p class="micro">Fresh public requests may take a few seconds. Nothing is sent to a customer or account.</p></section>
+        <section class="panel boundary-panel" aria-labelledby="boundary-heading"><div class="panel__header"><span class="step-number">02</span><div><p class="eyebrow">BOUNDARY</p><h3 id="boundary-heading">What this can establish</h3></div></div><p id="outcome"></p><div class="boundary-rule"></div><p class="eyebrow">WHAT STILL NEEDS A PERSON</p><p id="boundary"></p></section>
+      </div>
+      <section id="result-panel" class="result-panel" aria-labelledby="result-heading"><div class="result-panel__head"><div><p class="eyebrow">03 / OUTPUT</p><h3 id="result-heading">Result and next action</h3></div><span id="result-state" class="result-state" role="status">READY TO RUN</span></div><div id="result-content"><div class="empty-state"><span aria-hidden="true">↳</span><p>Choose an input and run this workflow. The cited result will appear here.</p></div></div><div id="result-actions" class="result-actions" hidden><button id="download-button" class="button button--secondary" type="button">Download receipt</button><button id="review-button" class="button button--secondary" type="button">Mark locally reviewed</button></div></section>
+      <footer class="workspace__foot"><span>PUBLIC SOURCE ≠ COMPLETE JOB</span><span>DETERMINISTIC OUTPUT ≠ VERIFIED AI</span></footer>
+    </section>
+  </main>
+  <noscript><p class="noscript">Turn on JavaScript to use the local workbench. The Python command-line workflows remain available.</p></noscript>
+</body>
+</html>

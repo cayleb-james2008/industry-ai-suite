@@ -397,7 +397,7 @@ class OnboardPathTests(unittest.TestCase):
         text_record = _policy_text_record(source)
         fake_result = {
             "ai_status": "AI / PROVIDER", "ai_invoked": True,
-            "ai_output": "The cited federal rule describes an employment process for review [evidence:opm-text-2026-19222]",
+            "ai_output": "The cited federal rule describes an employment process for review [evidence:opmtext:FR2026_19222]",
             "ai_failure": None, "ai_handoff": None,
             "ai_evidence": {"trace_provenance": "app-reported", "grounded": True},
         }
@@ -408,7 +408,7 @@ class OnboardPathTests(unittest.TestCase):
             patch("apps.onboardpath.flow.complete_grounded", return_value=fake_result) as complete,
         ):
             result = run_live(ai_client=client)
-        self.assertEqual(complete.call_args.kwargs["evidence_ids"], ("opm-text-2026-19222",))
+        self.assertEqual(complete.call_args.kwargs["evidence_ids"], ("opmtext:FR2026_19222",))
         prompt = complete.call_args.args[1]
         self.assertIn("federal employment process", prompt)
         self.assertIn("employer's policy", prompt)

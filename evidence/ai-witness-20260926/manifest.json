@@ -1,0 +1,63 @@
+{
+  "backtestguard": {
+    "cited_output": "The 2011–2020 vs 2021–2025 split is chronological, but without an external experiment record it does not constitute a completed backtest [evidence:USA:NY.GDP.MKTP.CD:2021].",
+    "evidence_ids": [
+      "USA:NY.GDP.MKTP.CD:2021"
+    ],
+    "model": "suite-local-proof",
+    "provider_id": "chatcmpl-GRNPwXCm6KqTmDzxdYNAq918LnZqhh6Y",
+    "request_sha256": "536e9f22dcc90bfad098bee3e3a7c2b3a866d8381f0a8dfa0451e5bdd84811cd",
+    "response_sha256": "bb0d08de76bf1529baba1c98fc64c08f71f174c1f736fe934e2196e980dd338c",
+    "review_note": "The cited observation belongs to the holdout; the sentence limits the result to chronology and names the missing experiment record.",
+    "witness_time_utc": "2026-09-26T21:10:46Z"
+  },
+  "ledgerbridge": {
+    "cited_output": "A single-sided public-activity cue is present and requires human review only, not proof of an error; this is not a company-ledger variance, and comparison with authorized company records is recommended [evidence:2026-09-24:II:9].",
+    "evidence_ids": [
+      "2026-09-24:II:9"
+    ],
+    "model": "suite-local-proof",
+    "provider_id": "chatcmpl-dU2iBso2FoPPVz9wqPh1HojNqBdDMTCC",
+    "request_sha256": "8811981834f28fd01e1527e409608f16defb13b6c98e458a049de0adeb3aca7c",
+    "response_sha256": "b2cf963d3d788814a824c4b66a23340ca376bec5d1f2fb993ad65e3ebdcc6101",
+    "review_note": "The sentence describes a single-sided public-cash review cue and explicitly rejects a company-ledger conclusion.",
+    "witness_time_utc": "2026-09-26T21:10:07Z"
+  },
+  "marketbrief": {
+    "cited_output": "Nominal U.S. GDP rose 5.02% from 2024 to 2025 [evidence:USA:NY.GDP.MKTP.CD:2024][evidence:USA:NY.GDP.MKTP.CD:2025], reflecting public macro context rather than a security return.",
+    "evidence_ids": [
+      "USA:NY.GDP.MKTP.CD:2024",
+      "USA:NY.GDP.MKTP.CD:2025"
+    ],
+    "model": "suite-local-proof",
+    "provider_id": "chatcmpl-Q01eEw9TxwqrZpq3ybcR9anPS1w6Gqm3",
+    "request_sha256": "97a3a37996e058248d1667890fd2eafaf48b443b81b91506f9bf6030027ad2d1",
+    "response_sha256": "338ebd57e30e0041bf9f3268f755cff19c236f8e8550a4c9817dced3c153f943",
+    "review_note": "The 5.02% nominal change matches the bounded World Bank series calculation and is described as macro context.",
+    "witness_time_utc": "2026-09-26T21:10:28Z"
+  },
+  "onboardpath": {
+    "cited_output": "The cited Federal Register notice is a proposed OPM rule on employment in the Excepted Service with a comment deadline of November 17, 2026 [evidence:opmtext:FR2026_19222].",
+    "evidence_ids": [
+      "opmtext:FR2026_19222"
+    ],
+    "model": "suite-local-proof",
+    "provider_id": "chatcmpl-hpQr3MJlx3mXL4wlMztUXSRFfhm9nBMB",
+    "request_sha256": "609c0b4cd86acab5af2e155220ca0cdc113b5d5b958ef611755ee2cebff6d15d",
+    "response_sha256": "4ee2b5b92c93be08ead4e99f612d15ec4a18085c55289d03de3694f01b72c642",
+    "review_note": "The sentence matches the cited OPM proposed-rule identity and comment date; it gives no employee guidance.",
+    "witness_time_utc": "2026-09-26T21:13:08Z"
+  },
+  "sentineldesk": {
+    "cited_output": "The CISA KEV record for CVE-2026-93952 describes an improper input validation vulnerability in Arista VeloCloud Orchestrator (VCO) on-prem that could allow a remote attacker to access privileged internal functionality and impact the VCO host, potentially compromising confidentiality, integrity, and availability of the orchestrator and its managed data [evidence:CVE-2026-93952].",
+    "evidence_ids": [
+      "CVE-2026-93952"
+    ],
+    "model": "suite-local-proof",
+    "provider_id": "chatcmpl-LYxDEspRAQ9ZnK3XG6z4FZnDBMaLyjS3",
+    "request_sha256": "f3c127c0455d076c8a94b95fc98ec409286dad0a06634a7de6ff359ed37f37bc",
+    "response_sha256": "113f6cf5f143d0c1e046906f61a984f532ac082e064819a74e2ea9c1f065df53",
+    "review_note": "The sentence matches the cited CISA KEV shortDescription and makes no organization-exposure claim.",
+    "witness_time_utc": "2026-09-26T21:11:11Z"
+  }
+}

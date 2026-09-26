@@ -1,0 +1,78 @@
+{
+  "call_results": [
+    {
+      "at_utc": "2026-09-26T21:10:07Z",
+      "call_index": 0,
+      "http_status": 200,
+      "model": "suite-local-proof",
+      "provider_host": "127.0.0.1",
+      "provider_id": "chatcmpl-dU2iBso2FoPPVz9wqPh1HojNqBdDMTCC",
+      "request_sha256": "8811981834f28fd01e1527e409608f16defb13b6c98e458a049de0adeb3aca7c",
+      "response_sha256": "b2cf963d3d788814a824c4b66a23340ca376bec5d1f2fb993ad65e3ebdcc6101",
+      "scope": "provider transport exchange only; task quality and app grounding remain app-reported",
+      "status": "VERIFIED"
+    },
+    {
+      "at_utc": "2026-09-26T21:10:28Z",
+      "call_index": 1,
+      "http_status": 200,
+      "model": "suite-local-proof",
+      "provider_host": "127.0.0.1",
+      "provider_id": "chatcmpl-Q01eEw9TxwqrZpq3ybcR9anPS1w6Gqm3",
+      "request_sha256": "97a3a37996e058248d1667890fd2eafaf48b443b81b91506f9bf6030027ad2d1",
+      "response_sha256": "338ebd57e30e0041bf9f3268f755cff19c236f8e8550a4c9817dced3c153f943",
+      "scope": "provider transport exchange only; task quality and app grounding remain app-reported",
+      "status": "VERIFIED"
+    },
+    {
+      "at_utc": "2026-09-26T21:10:46Z",
+      "call_index": 2,
+      "http_status": 200,
+      "model": "suite-local-proof",
+      "provider_host": "127.0.0.1",
+      "provider_id": "chatcmpl-GRNPwXCm6KqTmDzxdYNAq918LnZqhh6Y",
+      "request_sha256": "536e9f22dcc90bfad098bee3e3a7c2b3a866d8381f0a8dfa0451e5bdd84811cd",
+      "response_sha256": "bb0d08de76bf1529baba1c98fc64c08f71f174c1f736fe934e2196e980dd338c",
+      "scope": "provider transport exchange only; task quality and app grounding remain app-reported",
+      "status": "VERIFIED"
+    },
+    {
+      "at_utc": "2026-09-26T21:11:11Z",
+      "call_index": 3,
+      "http_status": 200,
+      "model": "suite-local-proof",
+      "provider_host": "127.0.0.1",
+      "provider_id": "chatcmpl-LYxDEspRAQ9ZnK3XG6z4FZnDBMaLyjS3",
+      "request_sha256": "f3c127c0455d076c8a94b95fc98ec409286dad0a06634a7de6ff359ed37f37bc",
+      "response_sha256": "113f6cf5f143d0c1e046906f61a984f532ac082e064819a74e2ea9c1f065df53",
+      "scope": "provider transport exchange only; task quality and app grounding remain app-reported",
+      "status": "VERIFIED"
+    },
+    {
+      "at_utc": "2026-09-26T21:11:27Z",
+      "call_index": 4,
+      "http_status": 200,
+      "model": "suite-local-proof",
+      "provider_host": "127.0.0.1",
+      "provider_id": "chatcmpl-szBSUyRqrlS3r30Y2quVTQZO77eJYdmh",
+      "request_sha256": "b579b106c2029541fb5c5518b20a813da7dca1926a6f5cf2aff3e7223f479825",
+      "response_sha256": "8c4758c26a2ced86868ecf41f5f24ac6c062aa714bdecb62d9995171f2d9a99e",
+      "scope": "provider transport exchange only; task quality and app grounding remain app-reported",
+      "status": "VERIFIED"
+    },
+    {
+      "at_utc": "2026-09-26T21:13:08Z",
+      "call_index": 5,
+      "http_status": 200,
+      "model": "suite-local-proof",
+      "provider_host": "127.0.0.1",
+      "provider_id": "chatcmpl-hpQr3MJlx3mXL4wlMztUXSRFfhm9nBMB",
+      "request_sha256": "609c0b4cd86acab5af2e155220ca0cdc113b5d5b958ef611755ee2cebff6d15d",
+      "response_sha256": "4ee2b5b92c93be08ead4e99f612d15ec4a18085c55289d03de3694f01b72c642",
+      "scope": "provider transport exchange only; task quality and app grounding remain app-reported",
+      "status": "VERIFIED"
+    }
+  ],
+  "final_chain_head_sha256": "21f18a440c94600debcf78944145c31346a5574bbac6a4f0150ba1124dba83a4",
+  "witness_integrity": "VERIFIED"
+}

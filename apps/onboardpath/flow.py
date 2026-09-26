@@ -379,6 +379,10 @@ def run_live(
     text_evidence_id = None
     if metadata_record is not None and text_record is not None:
         text_evidence_id = f"opm-text-{metadata_record.source_id}"
+        # Keep the public document number in the source trail, while using an
+        # AI citation token that cannot be mistaken for a phone number by the
+        # privacy redactor before the prompt reaches the model.
+        ai_text_evidence_id = f"opmtext:FR{metadata_record.source_id.replace('-', '_')}"
         excerpt_source = " ".join(text_paragraphs)
         excerpt = excerpt_source[:1200]
         selected_document = {
@@ -400,6 +404,7 @@ def run_live(
         }
         text_evidence = {
             "evidence_id": text_evidence_id,
+            "ai_citation_id": ai_text_evidence_id,
             "source_id": text_record.source_id,
             "source_url": text_record.source_url,
             "as_of": text_record.as_of,
@@ -416,10 +421,10 @@ def run_live(
         ai = complete_grounded(
             ai_client,
             f"Summarize only the public Federal Register OPM {metadata_record.data['type']} text below for a human reviewer. "
-            f"Cite [evidence:{text_evidence_id}]. Do not answer an employee-specific question, claim this is an employer's policy, "
+            f"Cite [evidence:{ai_text_evidence_id}]. Do not answer an employee-specific question, claim this is an employer's policy, "
             f"or make an eligibility, hiring, or disciplinary decision. Text: {excerpt}",
             system="Write one short, cautious observation about the cited federal document only; no legal advice or employee decision.",
-            evidence_ids=(text_evidence_id,),
+            evidence_ids=(ai_text_evidence_id,),
         )
 
     all_evidence = [*documents]

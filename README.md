@@ -2,7 +2,7 @@
 
 # Industry AI Suite — ten workflow packages on a shared secure foundation
 
-**Status: ten approved workflow apps in development; overall suite WIP / INCOMPLETE.** The ten concepts are approved project direction. Some apps expose bounded, real public-data slices, while missing private sources and other full-job requirements remain `UNVERIFIED`. Approval of the concepts is not evidence that the apps are AI-complete, shipped, deployed, used by customers, or commercially validated. Do not describe these packages as shipped or claim business results.
+**Status: ten inspectable workflow journeys; full enterprise suite INCOMPLETE.** The local workbench runs bounded public-source or authorized-input reviews, and the [hosted recorded lab](https://cayleb-james2008.github.io/agentic-resume/lab/) replays dated results. Missing private sources and other full-job requirements remain `UNVERIFIED`. Five local model samples have independently witnessed transport and cited output; they do not establish completed company workflows, customer use, or commercial results.
 
 ## The ten packages
 
@@ -10,7 +10,7 @@
 |---|---|
 | **LedgerBridge** | Finance staff account for public Treasury rows once, explain exceptions, and route review; company books remain unverified. |
 | **MarketBrief** | Analysts review cited U.S. GDP macro risk and a next step; no securities research or order/trade path. |
-| **ChainWatch** | A candidate public-address watch, currently blocked because exact public API terms were not verifiable; no company exposure is claimed. |
+| **ChainWatch** | Authorized watch-only observations can be checked locally against a supplied baseline. The public chain API remains blocked by unverified usage terms; no company exposure is claimed. |
 | **BacktestGuard** | Quant research integrity and leakage checks |
 | **ReplyCraft** | A cited public-policy sample draft for human review; customer support remains unverified without consent-authorized case/policy. |
 | **HandoffHub** | Direct official GovInfo OPM text handoff; workplace knowledge, permissions, and a real owner remain unverified. |
@@ -23,6 +23,12 @@ Every production command uses its live path; `run_demo()` and synthetic fixtures
 
 ## First run: all ten workflows
 
+### Local workbench
+
+Run `python3 -m webapp.server --port 18340` from this repository, then open `http://127.0.0.1:18340/`. The workbench offers ten distinct source-to-result review journeys. LedgerBridge accepts authorized CSV rows in memory; ChainWatch accepts authorized watch-only observations without calling the unadmitted Mempool API. The other journeys call their existing fresh public-source paths. Results show source identity, limits, human handoff, and a downloadable JSON receipt. Marking a result reviewed affects only the current browser view; there is no send, publish, trading, posting, or account action. The server binds to numeric loopback, requires a page token and matching Origin for POSTs, does not log request bodies, and does not save supplied rows. Run `python3 -m pytest -q -p no:cacheprovider` for the suite and workbench security checks.
+
+The workbench is a functional local product surface, not a claim that missing private enterprise workflows or external deployment are complete. Its live public sources depend on their current availability. The separate model witness below concerns five bounded CLI samples, not every browser journey. The CLI remains available below.
+
 From this directory, run:
 
 ```sh
@@ -32,7 +38,7 @@ python3 -m suite_core doctor
 
 This calls each app's `run_live()` path and makes only the app's admitted, read-only requests; it never calls `run_demo()` and does not substitute fixtures or cached results. Expect read-only HTTPS GETs to public sources such as Treasury, World Bank, CISA, Federal Register metadata, matching GovInfo document text, GitHub repository metadata, and the selected public portfolio page. ChainWatch deliberately makes no request while its public API terms remain unverified. It does not start an AI server, send messages, publish content, trade, sign, or make account changes.
 
-The command writes exactly ten per-app receipts to a temporary directory and exits **1** while the suite is incomplete; an all-`UNVERIFIED` run is never a success. The plain-English headline says `Suite status: INCOMPLETE`, while the separate workflow counts describe only each app receipt (for example, `UNVERIFIED=10`). The final `JSON summary:` line repeats this distinction in machine-readable form with `suite_status`, `job_status_counts`, and each app's `job_statuses`; `INCOMPLETE` is not a per-job counter. Receipts distinguish the app-reported source state (`VERIFIED_SOURCE`, `DATA_UNAVAILABLE`, or `UNVERIFIED`) from the full workflow state. A public source may return usable records and support a narrow task slice, but private finance, CRM, customer-support, employee, internal-knowledge, organization-alert, independent-AI, and other missing evidence keeps the affected full job `UNVERIFIED`. Receipts retain the source/provider URL, stable IDs, source as-of, retrieval UTC, terms, task result, uncertainty, and human handoff when the app returns them. `HTTP 200` verifies a response, not workflow completion, revenue, customers, or business impact. To keep receipts in a chosen local directory, add `--out-dir ./run-output`.
+The command writes exactly ten per-app receipts to a temporary directory and exits **1** while the suite is incomplete; an all-`UNVERIFIED` run is never a success. The plain-English headline says `Suite status: INCOMPLETE`, while the separate workflow counts describe only each app receipt (for example, `UNVERIFIED=10`). The final `JSON summary:` line repeats this distinction in machine-readable form with `suite_status`, `job_status_counts`, and each app's `job_statuses`; `INCOMPLETE` is not a per-job counter. Receipts distinguish the app-reported source state (`VERIFIED_SOURCE`, `DATA_UNAVAILABLE`, or `UNVERIFIED`) from the full workflow state. A public source may return usable records and support a narrow task slice, but private finance, CRM, customer-support, employee, internal-knowledge, organization-alert, and other missing evidence keeps the affected full job `UNVERIFIED`. Receipts retain the source/provider URL, stable IDs, source as-of, retrieval UTC, terms, task result, uncertainty, and human handoff when the app returns them. `HTTP 200` verifies a response, not workflow completion, revenue, customers, or business impact. To keep receipts in a chosen local directory, add `--out-dir ./run-output`.
 
 ## Public read-only source slices and terms
 
@@ -57,6 +63,10 @@ python3 scripts/run_all.py --ai-url http://127.0.0.1:PORT/v1 --out-dir ./run-out
 ```
 
 Replace `PORT` with the port of a local OpenAI-compatible service. This loopback route requires no API key. The runner only probes and uses it when explicitly supplied. A reachable route or app-reported response remains **AI CANDIDATE (unwitnessed)**; neither proves a suitable model response was executed. No app or runner can mark a call `VERIFIED`. The separate `scripts/verify_witness.py` can verify one transport exchange against the proxy's keyed log, late reveal, and app-reported call record; it does not upgrade the runner's receipt or certify the task answer.
+
+### Independently witnessed local model samples
+
+The [26 September 2026 witness bundle](evidence/ai-witness-20260926/README.md) verifies six actual local model exchanges. Five yielded cited sentences accepted by the app validator and manually compared with their public sources: LedgerBridge, MarketBrief, BacktestGuard, SentinelDesk, and OnboardPath. One earlier OnboardPath call was rejected because the privacy redactor changed a citation token; the corrected call passed without weakening privacy checks. The bundle includes the chained witness log, late key reveal, app call hashes, verifier result, and five reviewed output statements. This verifies bounded AI execution and source-linked samples, not full enterprise jobs.
 
 ### AI provider tracing is available; verification remains independent
 
