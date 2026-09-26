@@ -27,7 +27,7 @@ Every production command uses its live path; `run_demo()` and synthetic fixtures
 
 Run `python3 -m webapp.server --port 18340` from this repository, then open `http://127.0.0.1:18340/`. The workbench offers ten distinct source-to-result review journeys. LedgerBridge accepts authorized CSV rows in memory; ChainWatch accepts authorized watch-only observations without calling the unadmitted Mempool API. The other journeys call their existing fresh public-source paths. Results show source identity, limits, human handoff, and a downloadable JSON receipt. Marking a result reviewed affects only the current browser view; there is no send, publish, trading, posting, or account action. The server binds to numeric loopback, requires a page token and matching Origin for POSTs, does not log request bodies, and does not save supplied rows. Run `python3 -m pytest -q -p no:cacheprovider` for the suite and workbench security checks.
 
-The workbench is a functional local product surface, not a claim that missing private enterprise workflows or external deployment are complete. Its live public sources depend on their current availability. The separate model witness below concerns five bounded CLI samples, not every browser journey. The CLI remains available below.
+The workbench is a functional local product surface, not a claim that missing private enterprise workflows or external deployment are complete. Its dark evidence-dossier theme is shared with the hosted recorded lab through the exporter. Its live public sources depend on their current availability. The separate model witness below concerns five bounded CLI samples, not every browser journey. The CLI remains available below.
 
 From this directory, run:
 
