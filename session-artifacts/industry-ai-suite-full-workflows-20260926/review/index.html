@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Industry AI Suite · local workbench review</title>
+  <style>
+    :root{color-scheme:dark;font:16px/1.55 system-ui,sans-serif;background:#090c10;color:#edf3f5}
+    *{box-sizing:border-box} body{margin:0} main{max-width:1280px;margin:auto;padding:clamp(20px,4vw,56px)}
+    .eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:#a8d8e7;font-weight:700}
+    h1{font-size:clamp(2rem,4vw,3.8rem);line-height:1.06;letter-spacing:-.045em;margin:.5rem 0 1rem}
+    h2{font-size:1.4rem;margin:0} p{max-width:72ch;color:#b8c5cb} .intro{border-bottom:1px solid #41505a;padding-bottom:24px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:30px}
+    article{background:#151e26;border:1px solid #60717c;padding:20px} article:first-child{grid-column:1/-1}
+    .image{max-height:750px;overflow:auto;background:#0c1117;border:1px solid #33424d;margin:16px 0}
+    img{display:block;max-width:100%;height:auto;margin:auto} .mobile img{max-width:390px}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    button{font:inherit;color:#edf3f5;background:#1f303b;border:1px solid #8aa6b5;padding:10px 16px;cursor:pointer}
+    button[aria-pressed="true"]{background:#cce8f0;color:#091116;border-color:#cce8f0}
+    #summary{white-space:pre-wrap;background:#0c1117;border:1px solid #41505a;padding:16px;min-height:90px;color:#dbe5e9}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}article:first-child{grid-column:auto}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="intro"><p class="eyebrow">Local visual review · 26 September 2026</p><h1>Ten organization review paths</h1><p>The approved near-black and white design remains. These screenshots show the local workbench with invented data, the support result, and the narrow layout. Each full enterprise job remains unverified until permitted organization records and authority are checked.</p></header>
+    <div class="grid">
+      <article data-item="Desktop workbench"><p class="eyebrow">01 / Desktop</p><h2>Workbench shell</h2><p>Ten-product navigation and the approved visual system.</p><div class="image"><img src="../workbench-before.png" alt="Desktop workbench showing ten-product navigation and dark visual design"></div><div class="controls"><button type="button" data-choice="Approve">Approve</button><button type="button" data-choice="Redo">Redo</button></div></article>
+      <article data-item="Organization result"><p class="eyebrow">02 / Result</p><h2>Support review</h2><p>An invented consent and policy case produces a cited draft and human handoff.</p><div class="image"><img src="../workbench-replycraft-result.png" alt="ReplyCraft local review with synthetic example, cited draft, and unverified boundary"></div><div class="controls"><button type="button" data-choice="Approve">Approve</button><button type="button" data-choice="Redo">Redo</button></div></article>
+      <article class="mobile" data-item="Narrow layout"><p class="eyebrow">03 / Mobile</p><h2>Narrow layout</h2><p>The same workbench at 390 pixels wide, shown with a rejected duplicate-field input.</p><div class="image"><img src="../workbench-mobile.png" alt="Mobile workbench showing input and a duplicate-field denial"></div><div class="controls"><button type="button" data-choice="Approve">Approve</button><button type="button" data-choice="Redo">Redo</button></div></article>
+    </div>
+    <section><h2>Review choices</h2><p>Choices stay in this browser. Copy the summary if you want to send precise feedback.</p><div id="summary" role="status"></div><button id="copy" type="button">Copy summary</button></section>
+  </main>
+  <script>
+    const key="industry-suite-local-review-20260926";
+    const choices=JSON.parse(localStorage.getItem(key)||"{}");
+    const cards=[...document.querySelectorAll("article[data-item]")];
+    function render(){cards.forEach(card=>{const name=card.dataset.item;card.querySelectorAll("button[data-choice]").forEach(button=>button.setAttribute("aria-pressed",String(choices[name]===button.dataset.choice)));});document.getElementById("summary").textContent=cards.map(card=>`${card.dataset.item}: ${choices[card.dataset.item]||"No choice yet"}`).join("\n");}
+    cards.forEach(card=>card.querySelectorAll("button[data-choice]").forEach(button=>button.addEventListener("click",()=>{choices[card.dataset.item]=button.dataset.choice;localStorage.setItem(key,JSON.stringify(choices));render();})));
+    document.getElementById("copy").addEventListener("click",async()=>{const value=document.getElementById("summary").textContent;try{await navigator.clipboard.writeText(value);}catch{const field=document.createElement("textarea");field.value=value;document.body.append(field);field.select();document.execCommand("copy");field.remove();}});
+    render();
+  </script>
+</body>
+</html>

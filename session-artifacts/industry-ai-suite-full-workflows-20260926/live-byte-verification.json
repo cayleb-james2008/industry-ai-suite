@@ -1,0 +1,233 @@
+{
+  "site": "https://cayleb-james2008.github.io/agentic-resume/",
+  "portfolio_commit": "b32a4ddf3dd956d92491a675147a43f92960b872",
+  "pages_run": 36278274288,
+  "files": [
+    {
+      "path": "Cayleb-James-resume.pdf",
+      "status": 200,
+      "local_sha256": "a61898e86e11e8d34db91af2172efc64468b1ab41c20d3e5bb399f82d90c9826",
+      "live_sha256": "a61898e86e11e8d34db91af2172efc64468b1ab41c20d3e5bb399f82d90c9826",
+      "byte_match": true
+    },
+    {
+      "path": "css/industry-ai-suite.css",
+      "status": 200,
+      "local_sha256": "e4048c35d361c72061f536f1802cf1620979012e6f1aaebb90a5e6a6c25d7ad7",
+      "live_sha256": "e4048c35d361c72061f536f1802cf1620979012e6f1aaebb90a5e6a6c25d7ad7",
+      "byte_match": true
+    },
+    {
+      "path": "css/styles.css",
+      "status": 200,
+      "local_sha256": "da34fd75ef83df29784415da10dbedb17ad12040f3ad950ebd5e9f405de15133",
+      "live_sha256": "da34fd75ef83df29784415da10dbedb17ad12040f3ad950ebd5e9f405de15133",
+      "byte_match": true
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "local_sha256": "20c2bfd7085d5bc190961b92ea4304216c7a2ca2dbcc5fa5248ef77be54cc410",
+      "live_sha256": "20c2bfd7085d5bc190961b92ea4304216c7a2ca2dbcc5fa5248ef77be54cc410",
+      "byte_match": true
+    },
+    {
+      "path": "js/main.js",
+      "status": 200,
+      "local_sha256": "83ab31b303730c69bc9210d9f67a62ee733b41345384ca25b56987cb54665ac3",
+      "live_sha256": "83ab31b303730c69bc9210d9f67a62ee733b41345384ca25b56987cb54665ac3",
+      "byte_match": true
+    },
+    {
+      "path": "lab/app.js",
+      "status": 200,
+      "local_sha256": "a3affffea959677bce52e404712d823e603b91d0c3652aa61a4095a0ad63c9be",
+      "live_sha256": "a3affffea959677bce52e404712d823e603b91d0c3652aa61a4095a0ad63c9be",
+      "byte_match": true
+    },
+    {
+      "path": "lab/dark.css",
+      "status": 200,
+      "local_sha256": "457347e93b916b41ceedc72f37db7b4f2a866a2da7144ad9c3ef41c94b962ba1",
+      "live_sha256": "457347e93b916b41ceedc72f37db7b4f2a866a2da7144ad9c3ef41c94b962ba1",
+      "byte_match": true
+    },
+    {
+      "path": "lab/index.html",
+      "status": 200,
+      "local_sha256": "995d5a920952622a8bf9a6435ac8bee1629bf40943d4419f3b7d5f246f19706e",
+      "live_sha256": "995d5a920952622a8bf9a6435ac8bee1629bf40943d4419f3b7d5f246f19706e",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/backtestguard.json",
+      "status": 200,
+      "local_sha256": "ec302484ed7cc3c311a1e6bb86bbccbb8a00708ddf0f98ff298b4ae2980728c5",
+      "live_sha256": "ec302484ed7cc3c311a1e6bb86bbccbb8a00708ddf0f98ff298b4ae2980728c5",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/chainwatch.json",
+      "status": 200,
+      "local_sha256": "46e523ffc3fb52bb4044ba573be67e39cb3ed3137131e5b24d488946b0f9214c",
+      "live_sha256": "46e523ffc3fb52bb4044ba573be67e39cb3ed3137131e5b24d488946b0f9214c",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/handoffhub.json",
+      "status": 200,
+      "local_sha256": "e8f19abc112272cd6afbdd1732c3f5413d96ad731f467e92ad3c18dd01447ad7",
+      "live_sha256": "e8f19abc112272cd6afbdd1732c3f5413d96ad731f467e92ad3c18dd01447ad7",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/ledgerbridge.json",
+      "status": 200,
+      "local_sha256": "7fe788479210e46fe98a2fe15c71ec1571f786efaeec27434fa7794762319e23",
+      "live_sha256": "7fe788479210e46fe98a2fe15c71ec1571f786efaeec27434fa7794762319e23",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/marketbrief.json",
+      "status": 200,
+      "local_sha256": "53ce6039b33b50f9dd92b3d526890cf8743bc90226cfd02a77625bf98954a1f6",
+      "live_sha256": "53ce6039b33b50f9dd92b3d526890cf8743bc90226cfd02a77625bf98954a1f6",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/onboardpath.json",
+      "status": 200,
+      "local_sha256": "2dfd4b487d153628ee534ef2f666ac2efd014c1e606132b0cb539dac95ec8daa",
+      "live_sha256": "2dfd4b487d153628ee534ef2f666ac2efd014c1e606132b0cb539dac95ec8daa",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/pipelinerelay.json",
+      "status": 200,
+      "local_sha256": "f5304a4fb5aed966709bd398d6f88bd5336eeae3a967c65236cf8b598cc73cec",
+      "live_sha256": "f5304a4fb5aed966709bd398d6f88bd5336eeae3a967c65236cf8b598cc73cec",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/replycraft.json",
+      "status": 200,
+      "local_sha256": "f522b0bc695db29b644cde85f1f76e6e213fcf8fbf229a7c8c591708a9e83bbe",
+      "live_sha256": "f522b0bc695db29b644cde85f1f76e6e213fcf8fbf229a7c8c591708a9e83bbe",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/searchlift.json",
+      "status": 200,
+      "local_sha256": "4d27b529067b1f3305b5b2034a989a463e38b791db5e2b09e33b8db6fb12b85c",
+      "live_sha256": "4d27b529067b1f3305b5b2034a989a463e38b791db5e2b09e33b8db6fb12b85c",
+      "byte_match": true
+    },
+    {
+      "path": "lab/receipts/sentineldesk.json",
+      "status": 200,
+      "local_sha256": "b9e660a331a0acb561e4ab2fd5a657db7112d704001404c86491b7fc0bfb2516",
+      "live_sha256": "b9e660a331a0acb561e4ab2fd5a657db7112d704001404c86491b7fc0bfb2516",
+      "byte_match": true
+    },
+    {
+      "path": "lab/styles.css",
+      "status": 200,
+      "local_sha256": "b399b09a7bd3e355e1560a26639e02a1e5a81e295a80a58f5cb9f1233a519b1e",
+      "live_sha256": "b399b09a7bd3e355e1560a26639e02a1e5a81e295a80a58f5cb9f1233a519b1e",
+      "byte_match": true
+    },
+    {
+      "path": "projects/backtestguard.html",
+      "status": 200,
+      "local_sha256": "00778cc2cd92300e552279a60a63d6e32da30cd8e183fe2c90e80ddcbe11b6ed",
+      "live_sha256": "00778cc2cd92300e552279a60a63d6e32da30cd8e183fe2c90e80ddcbe11b6ed",
+      "byte_match": true
+    },
+    {
+      "path": "projects/chainwatch.html",
+      "status": 200,
+      "local_sha256": "b156955653aa18015d29279f156e1576b1838cc462a418165050d43ce0da93e5",
+      "live_sha256": "b156955653aa18015d29279f156e1576b1838cc462a418165050d43ce0da93e5",
+      "byte_match": true
+    },
+    {
+      "path": "projects/dotz.html",
+      "status": 200,
+      "local_sha256": "72d0e3268a396e3b1bdf468f64926d78d8dd04bcc758cacae73db63a5d6736df",
+      "live_sha256": "72d0e3268a396e3b1bdf468f64926d78d8dd04bcc758cacae73db63a5d6736df",
+      "byte_match": true
+    },
+    {
+      "path": "projects/handoffhub.html",
+      "status": 200,
+      "local_sha256": "5b67992b63438908cf7aaefe7d5428588f9cd99df3765f3a1a543b94692fe542",
+      "live_sha256": "5b67992b63438908cf7aaefe7d5428588f9cd99df3765f3a1a543b94692fe542",
+      "byte_match": true
+    },
+    {
+      "path": "projects/ledgerbridge.html",
+      "status": 200,
+      "local_sha256": "605ed464a576926376e71609cf23791918f410b89d6abd537ce0b953315e71f2",
+      "live_sha256": "605ed464a576926376e71609cf23791918f410b89d6abd537ce0b953315e71f2",
+      "byte_match": true
+    },
+    {
+      "path": "projects/marketbrief.html",
+      "status": 200,
+      "local_sha256": "ad774ba6ad3e164b8d407e2d4a0647d34c84483b72132966902d3f49841eecff",
+      "live_sha256": "ad774ba6ad3e164b8d407e2d4a0647d34c84483b72132966902d3f49841eecff",
+      "byte_match": true
+    },
+    {
+      "path": "projects/onboardpath.html",
+      "status": 200,
+      "local_sha256": "3041c98ac80ab164372f1ec5fea5aa7c4689adf7f32be281e73be3649e1e039c",
+      "live_sha256": "3041c98ac80ab164372f1ec5fea5aa7c4689adf7f32be281e73be3649e1e039c",
+      "byte_match": true
+    },
+    {
+      "path": "projects/pipelinerelay.html",
+      "status": 200,
+      "local_sha256": "2d617c723124862ef05f6ad00e01a9d9d7c105585ff78409a313393cc57b9900",
+      "live_sha256": "2d617c723124862ef05f6ad00e01a9d9d7c105585ff78409a313393cc57b9900",
+      "byte_match": true
+    },
+    {
+      "path": "projects/replycraft.html",
+      "status": 200,
+      "local_sha256": "eb3cdc92cc79805d6570b554e921487319900ca91cb419f2c0bbc0e9e5943c91",
+      "live_sha256": "eb3cdc92cc79805d6570b554e921487319900ca91cb419f2c0bbc0e9e5943c91",
+      "byte_match": true
+    },
+    {
+      "path": "projects/searchlift.html",
+      "status": 200,
+      "local_sha256": "07e394d953bec659b00a4820d9ae78b9d78297988955b5219494201173053489",
+      "live_sha256": "07e394d953bec659b00a4820d9ae78b9d78297988955b5219494201173053489",
+      "byte_match": true
+    },
+    {
+      "path": "projects/sentineldesk.html",
+      "status": 200,
+      "local_sha256": "ae9d6d5c9f5ac37857e9fdf18868ec44b9a4d57c7bed2833265ad50c9846b209",
+      "live_sha256": "ae9d6d5c9f5ac37857e9fdf18868ec44b9a4d57c7bed2833265ad50c9846b209",
+      "byte_match": true
+    },
+    {
+      "path": "projects/sophos.html",
+      "status": 200,
+      "local_sha256": "627b858edbfc6e5da0dda992fd4398b4ac934070b2e79f65bed53449d26253d8",
+      "live_sha256": "627b858edbfc6e5da0dda992fd4398b4ac934070b2e79f65bed53449d26253d8",
+      "byte_match": true
+    },
+    {
+      "path": "resume.html",
+      "status": 200,
+      "local_sha256": "5f556b226a3651844631da5a086c93632201d329068025f750798e13c6e77edf",
+      "live_sha256": "5f556b226a3651844631da5a086c93632201d329068025f750798e13c6e77edf",
+      "byte_match": true
+    }
+  ],
+  "matched": 32,
+  "total": 32
+}
