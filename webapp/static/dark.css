@@ -152,6 +152,7 @@ a:hover { color: var(--signal-dark); }
   .workflow-nav { border-top-color: var(--line); }
   .nav-item { border-right-color: var(--line); }
   .nav-item[aria-current="page"] { box-shadow: inset 0 -2px #A9DCEC; }
+  .rail__foot { display: block; margin: 0; padding: .75rem 1.25rem 1rem; font-size: .68rem; line-height: 1.5; letter-spacing: .02em; }
   .workspace__hero { border-bottom: 0; }
 }
 @media (max-width: 430px) {

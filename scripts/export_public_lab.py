@@ -142,7 +142,7 @@ def export(receipts_dir: Path, output_dir: Path, ai_proof_path: Path | None = No
     html = html.replace('LOCAL · READ ONLY', 'RECORDED · READ ONLY')
     html = html.replace('RECORDED · READ ONLY</div>', 'RECORDED · READ ONLY <a class="return-link" href="../index.html">Portfolio ↗</a></div>')
     html = html.replace('Run a cited public source or bring your own permitted, de-identified input. Inspect the result, then make the human decision.', 'Explore ten dated product results. Each one shows its source, its actual output, and the decision left with a person.')
-    html = html.replace('No account, private feed, message, trade, or publication is connected. Inputs stay in this local process and are not saved.', 'Recorded public results only. ChainWatch uses a clearly invented example. For fresh data and permitted, de-identified input, run the local workbench from the public repository.')
+    html = html.replace('No account, private feed, message, trade, or publication is connected. Inputs stay in this local process and are not saved.', 'These are dated public results, not fresh source requests. For current data or permitted local input, run the workbench from the public repository.')
     html = html.replace('Fresh public requests may take a few seconds. Nothing is sent to a customer or account.', 'These files are dated snapshots. Opening them makes no new source request or external change.')
     html = html.replace('Turn on JavaScript to use the local workbench. The Python command-line workflows remain available.', 'Turn on JavaScript to explore the recorded results.')
     (output_dir / "index.html").write_text(html, encoding="utf-8")

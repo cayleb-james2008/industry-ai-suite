@@ -7,8 +7,8 @@
   <meta name="workbench-token" content="__WORKBENCH_TOKEN__">
   <title>Industry AI Suite — workbench</title>
   <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/dark.css?v=enterprise-20260926-1">
-  <script src="/app.js?v=enterprise-20260926-1" defer></script>
+  <link rel="stylesheet" href="/dark.css?v=wording-20260927-1">
+  <script src="/app.js?v=wording-20260927-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#workflow">Skip to workflow</a>
@@ -20,7 +20,7 @@
     <aside class="rail" aria-label="Suite navigation">
       <div class="rail__intro"><p class="eyebrow">TEN DISTINCT WORKFLOWS</p><h1>Useful work.<br><em>Visible limits.</em></h1><p>Run a cited public source or bring your own permitted, de-identified input. These reviews need no paid API. Inspect the result, then make the human decision.</p></div>
       <nav aria-label="Choose a workflow"><div id="workflow-nav" class="workflow-nav"></div></nav>
-      <p class="rail__foot">No account, private feed, message, trade, or publication is connected. Inputs stay in this local process and are not saved.</p>
+      <p class="rail__foot" id="rail-note">No account, private feed, message, trade, or publication is connected. Inputs stay in this local process and are not saved.</p>
     </aside>
     <section id="workflow" class="workspace">
       <div class="workspace__topline"><span id="category">PUBLIC DATA / HUMAN REVIEW</span><span id="index">01 / 10</span></div>
@@ -30,7 +30,7 @@
         <section class="panel boundary-panel" aria-labelledby="boundary-heading"><div class="panel__header"><span class="step-number">02</span><div><p class="eyebrow">BOUNDARY</p><h3 id="boundary-heading">What this can establish</h3></div></div><p id="outcome"></p><div class="boundary-rule"></div><p class="eyebrow">WHAT STILL NEEDS A PERSON</p><p id="boundary"></p></section>
       </div>
       <section id="result-panel" class="result-panel" aria-labelledby="result-heading"><div class="result-panel__head"><div><p class="eyebrow">03 / OUTPUT</p><h3 id="result-heading">Result and next action</h3></div><span id="result-state" class="result-state" role="status">READY TO RUN</span></div><div id="result-content"><div class="empty-state"><span aria-hidden="true">↳</span><p>Choose an input and run this workflow. The cited result will appear here.</p></div></div><div id="result-actions" class="result-actions" hidden><button id="download-button" class="button button--secondary" type="button">Download receipt</button><button id="review-button" class="button button--secondary" type="button">Mark locally reviewed</button></div></section>
-      <footer class="workspace__foot"><span>PUBLIC SOURCE ≠ COMPLETE JOB</span><span>DETERMINISTIC OUTPUT ≠ VERIFIED AI</span></footer>
+      <footer class="workspace__foot"><span>PUBLIC DATA ≠ COMPANY RECORDS</span><span>A DRAFT ≠ A DECISION</span></footer>
     </section>
   </main>
   <noscript><p class="noscript">Turn on JavaScript to use the local workbench. The Python command-line workflows remain available.</p></noscript>
