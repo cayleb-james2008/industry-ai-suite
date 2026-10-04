@@ -57,13 +57,26 @@ def _receipt(
     public_evidence = [_source_fields(x) for x in evidence if isinstance(x, dict)] if isinstance(evidence, list) else []
     if slug in {"onboardpath", "handoffhub", "replycraft"}:
         public_evidence.sort(key=lambda item: 0 if str(item.get("evidence_id", "")).startswith("opm-text-") else 1)
+    uncertainty = source.get("uncertainty")
+    has_uncertainty = (
+        isinstance(uncertainty, str) and bool(uncertainty.strip())
+    ) or (
+        isinstance(uncertainty, list)
+        and any(isinstance(item, str) and item.strip() for item in uncertainty)
+    )
+    if not has_uncertainty:
+        reason = source.get("workflow_reason")
+        uncertainty = reason if isinstance(reason, str) and reason.strip() else (
+            "Task-specific uncertainty was not recorded. This dated workflow remains "
+            "UNVERIFIED; follow the human handoff before decisions."
+        )
     public = {
         "project": source.get("project"), "app_slug": slug,
         "status": source.get("status"), "source_status": source.get("source_status"),
         "workflow_status": source.get("workflow_status"),
         "policy_text_status": source.get("policy_text_status"),
         "task_result": _result(slug, source),
-        "uncertainty": source.get("uncertainty"), "ai_status": source.get("ai_status"),
+        "uncertainty": uncertainty, "ai_status": source.get("ai_status"),
         "handoff": source.get("handoff"), "source_hash": source.get("source_hash"),
         "source_metadata": _source_fields(source.get("source_metadata")),
         "source": _source_fields(source.get("source")),
