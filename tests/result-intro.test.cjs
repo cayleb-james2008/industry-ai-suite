@@ -28,6 +28,7 @@ test("DATA_UNAVAILABLE intro describes the attempted live source without contrad
   );
 
   assert.match(text, /The live source did not return usable records for this run\./);
+  assert.equal(text.split("The live source did not return usable records for this run.").length - 1, 1);
   assert.doesNotMatch(text, /No external source is connected to this result\./);
   assert.match(text, /No fixture, cache, or substitute was used/);
   assert.match(text, /full workflow remains unverified/i);

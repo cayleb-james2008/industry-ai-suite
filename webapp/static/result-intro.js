@@ -33,7 +33,11 @@
       : data.ai_invoked
         ? " A model call was reported, but no independent witness is attached here."
         : " This result was produced without a model call.";
-    return [sourceNote + modelNote, liveStatus?.explanation].filter(Boolean).join(" ");
+    const explanation = String(liveStatus?.explanation || "").trim();
+    const detailNote = explanation.startsWith(sourceNote)
+      ? explanation.slice(sourceNote.length).trim()
+      : explanation;
+    return [sourceNote + modelNote, detailNote].filter(Boolean).join(" ");
   }
 
   return Object.freeze({ buildResultIntroText });
