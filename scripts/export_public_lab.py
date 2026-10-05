@@ -150,6 +150,7 @@ def export(receipts_dir: Path, output_dir: Path, ai_proof_path: Path | None = No
     html = html.replace('<html lang="en">', '<html lang="en" data-mode="recorded">')
     html = html.replace('  <meta name="workbench-token" content="__WORKBENCH_TOKEN__">\n', '')
     html = html.replace('href="/styles.css"', 'href="styles.css"').replace('href="/dark.css', 'href="dark.css').replace('src="/app.js', 'src="app.js')
+    html = html.replace('src="/result-intro.js', 'src="result-intro.js')
     html = html.replace('Industry AI Suite — workbench', 'Industry AI Suite — recorded journeys')
     html = html.replace('WORKBENCH / 01', 'RECORDED JOURNEYS / 01')
     html = html.replace('LOCAL · READ ONLY', 'RECORDED · READ ONLY')
@@ -162,6 +163,7 @@ def export(receipts_dir: Path, output_dir: Path, ai_proof_path: Path | None = No
     shutil.copy2(STATIC / "styles.css", output_dir / "styles.css")
     shutil.copy2(STATIC / "dark.css", output_dir / "dark.css")
     shutil.copy2(STATIC / "app.js", output_dir / "app.js")
+    shutil.copy2(STATIC / "result-intro.js", output_dir / "result-intro.js")
 
 
 def main() -> None:

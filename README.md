@@ -4,6 +4,22 @@
 
 **Status: ten inspectable workflow journeys; full enterprise suite INCOMPLETE.** The local workbench runs bounded public-source reviews and ten distinct organization-import review paths. The [hosted recorded lab](https://cayleb-james2008.github.io/agentic-resume/lab/) replays dated public results. Organization imports are local, require a permitted de-identified export, and cannot authenticate the submitter or source. Missing real sources and authority keep every full job `UNVERIFIED`. Five earlier local model samples have independently witnessed transport and cited output; the organization-import paths are deterministic and make no AI claim. None of this establishes completed company workflows, customer use, or commercial results.
 
+## Quickstart: fresh checkout
+
+**Runtime:** Python 3 (the fresh-sandbox verification used CPython 3.14.7); source-tree workflows use the Python standard library. No API key or local model is required. `pytest` is optional and needed only to run the tests.
+
+```sh
+git clone --branch main --depth 1 https://github.com/cayleb-james2008/industry-ai-suite.git
+cd industry-ai-suite
+python3 -m webapp.server --port 18340
+```
+
+Open <http://127.0.0.1:18340/>. Choose one of the ten workflows and run its labeled public-source path or local-only safe example. The safe organization examples are synthetic engineering fixtures, not company data. Do not paste credentials, direct personal identifiers, or confidential production data into the local importer.
+
+To capture all ten fresh public-source receipts locally, stop the workbench and run `python3 scripts/run_all.py --out-dir ./run-output`. This makes only the named read-only public requests; ChainWatch deliberately makes no chain request. An unavailable feed is recorded as `DATA_UNAVAILABLE`, not replaced with a fixture. The suite exits `1` whenever the full workflows remain incomplete; this is not a passing completion claim. To run tests, install/activate `pytest` separately and run `python3 -m pytest -q -p no:cacheprovider`.
+
+**Status meanings:** `DATA_UNAVAILABLE` means this run returned no usable live records; no fixture, cache, stale, or substitute data was used, and only the same source should be retried later. `UNVERIFIED` means source terms, provenance, freshness, task fit, authority, or required private inputs could not be established; do not treat it as verified. A `VERIFIED_SOURCE` can support only its bounded task slice—the full organization workflow remains `UNVERIFIED` until its missing inputs and human authority are established.
+
 ## The ten packages
 
 | Package | Demonstration focus |

@@ -12,6 +12,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from suite_core import LiveSourceError
 from .runner import SLUGS, run
 from .enterprise.common import strict_json_loads
 from .enterprise.examples import EXAMPLES
@@ -23,7 +24,77 @@ ASSETS = {
     "/styles.css": ("styles.css", "text/css; charset=utf-8"),
     "/dark.css": ("dark.css", "text/css; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+    "/result-intro.js": ("result-intro.js", "text/javascript; charset=utf-8"),
 }
+
+
+def _source_status_presentation(receipt: dict[str, object]) -> dict[str, str] | None:
+    """Explain live-source status without upgrading the full workflow verdict."""
+    status = ""
+    for key in ("source_status", "data_status", "status"):
+        value = receipt.get(key)
+        if isinstance(value, str):
+            status = value
+            break
+    if status.startswith("DATA_UNAVAILABLE"):
+        return {
+            "label": "DATA UNAVAILABLE", "tone": "warn",
+            "explanation": (
+                "The live source did not return usable records for this run. "
+                "No fixture, cache, or substitute was used; retry the same source later. "
+                "The full workflow remains unverified."
+            ),
+        }
+    if status.startswith("UNVERIFIED"):
+        return {
+            "label": "SOURCE UNVERIFIED", "tone": "warn",
+            "explanation": (
+                "Source provenance, terms, freshness, task fit, or authority could not be established. "
+                "No records are treated as verified, and no substitute was used."
+            ),
+        }
+    if status.startswith("VERIFIED_SOURCE"):
+        return {
+            "label": "DATED PUBLIC SOURCE", "tone": "good",
+            "explanation": (
+                "The named public source passed its checks for this run. "
+                "This does not verify the complete organization workflow or authorize an action."
+            ),
+        }
+    return None
+
+
+def _source_failure(slug: str, status: str) -> dict[str, object]:
+    if status == "DATA_UNAVAILABLE":
+        uncertainty = (
+            "The live source did not return usable records for this run. "
+            "No fixture, cache, or substitute was used."
+        )
+        next_action = "Retry the same public source later; do not use a stale or substitute result."
+        ai_status = "NOT RUN / DATA UNAVAILABLE"
+    else:
+        status = "UNVERIFIED"
+        uncertainty = (
+            "Source provenance, terms, freshness, task fit, or authority could not be established. "
+            "No records are treated as verified, and no substitute was used."
+        )
+        next_action = "Check the named source and its terms or authority before using any records."
+        ai_status = "NOT RUN / UNVERIFIED SOURCE"
+    receipt: dict[str, object] = {
+        "app_slug": slug,
+        "status": status,
+        "source_status": status,
+        "workflow_status": "UNVERIFIED",
+        "task_result": None,
+        "evidence": [],
+        "uncertainty": uncertainty,
+        "human_handoff": {"owner": "source reviewer", "next_action": next_action},
+        "ai_status": ai_status,
+        "ai_invoked": False,
+        "side_effect_count": 0,
+    }
+    receipt["workbench_status"] = _source_status_presentation(receipt)
+    return receipt
 
 
 class WorkbenchHandler(BaseHTTPRequestHandler):
@@ -95,12 +166,19 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         try:
             payload = strict_json_loads(self.rfile.read(length))
             result = run(path.rsplit("/", 1)[-1], payload)
+        except LiveSourceError as exc:
+            self._json(200, _source_failure(path.rsplit("/", 1)[-1], exc.status))
+            return
         except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
             self._json(400, {"error": str(exc)[:300]})
             return
         except Exception:
             self._json(502, {"error": "The source or workflow failed. Check the input and try again; no saved result was substituted."})
             return
+        if isinstance(result, dict) and "workbench_status" not in result:
+            presentation = _source_status_presentation(result)
+            if presentation is not None:
+                result = {**result, "workbench_status": presentation}
         try:
             self._json(200, result)
         except (TypeError, ValueError):

@@ -11,6 +11,7 @@ from scripts import run_all
 from scripts.export_public_lab import _receipt
 from webapp.runner import run
 from webapp.server import WorkbenchServer
+from suite_core import DataUnavailable
 
 
 class WorkbenchInputTests(unittest.TestCase):
@@ -105,6 +106,75 @@ class WorkbenchHttpTests(unittest.TestCase):
             value = json.load(response)
         self.assertEqual(value["status"], "UNVERIFIED")
         self.assertIsNone(value["task_result"])
+
+
+class WorkbenchSourceFailureHttpTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.server = WorkbenchServer(0)
+        cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
+        cls.thread.start()
+        cls.base = f"http://127.0.0.1:{cls.server.server_port}"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        cls.thread.join(timeout=3)
+
+    def test_typed_live_source_failure_returns_a_truthful_receipt(self):
+        request = Request(
+            self.base + "/api/run/ledgerbridge",
+            data=json.dumps({"mode": "public"}).encode(), method="POST",
+            headers={
+                "Origin": self.base,
+                "Content-Type": "application/json",
+                "X-Workbench-Token": self.server.token,
+            },
+        )
+        with patch("webapp.server.run", side_effect=DataUnavailable("test-only source outage")):
+            try:
+                with urlopen(request, timeout=3) as response:
+                    http_status = response.status
+                    receipt = json.load(response)
+            except HTTPError as error:
+                http_status = error.code
+                receipt = json.load(error)
+        self.assertEqual(http_status, 200)
+        self.assertEqual(receipt["status"], "DATA_UNAVAILABLE")
+        self.assertEqual(receipt["source_status"], "DATA_UNAVAILABLE")
+        self.assertIsNone(receipt["task_result"])
+        self.assertEqual(receipt["evidence"], [])
+        self.assertFalse(receipt["ai_invoked"])
+        self.assertEqual(receipt["side_effect_count"], 0)
+        self.assertEqual(receipt["workbench_status"]["label"], "DATA UNAVAILABLE")
+        self.assertIn("No fixture, cache, or substitute was used", receipt["uncertainty"])
+
+    def test_unverified_source_keeps_a_distinct_workbench_label(self):
+        request = Request(
+            self.base + "/api/run/ledgerbridge",
+            data=json.dumps({"mode": "public"}).encode(), method="POST",
+            headers={
+                "Origin": self.base,
+                "Content-Type": "application/json",
+                "X-Workbench-Token": self.server.token,
+            },
+        )
+        receipt_value = {
+            "status": "UNVERIFIED",
+            "source_status": "UNVERIFIED",
+            "task_result": None,
+            "evidence": [],
+            "uncertainty": "Source terms or task fit could not be established.",
+            "ai_invoked": False,
+            "side_effect_count": 0,
+        }
+        with patch("webapp.server.run", return_value=receipt_value):
+            with urlopen(request, timeout=3) as response:
+                receipt = json.load(response)
+        self.assertEqual(receipt["workbench_status"]["label"], "SOURCE UNVERIFIED")
+        self.assertIn("could not be established", receipt["workbench_status"]["explanation"])
+        self.assertNotIn("retry the same source later", receipt["workbench_status"]["explanation"])
 
 
 if __name__ == "__main__":
