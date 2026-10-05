@@ -24,6 +24,7 @@ ASSETS = {
     "/styles.css": ("styles.css", "text/css; charset=utf-8"),
     "/dark.css": ("dark.css", "text/css; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+    "/result-intro.js": ("result-intro.js", "text/javascript; charset=utf-8"),
 }
 
 
