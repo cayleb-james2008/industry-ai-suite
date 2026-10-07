@@ -1,8 +1,10 @@
-> **Operator model:** the reader is a non-technical goal-bringer. Plain English first; technical details only where they verify the work.
+# Industry AI Suite — ten workflow prototypes, one shared evidence layer
 
-# Industry AI Suite — ten workflow packages on a shared secure foundation
+I’ve been building this as an independent engineering project: ten focused workflow packages on a shared Python foundation. I wanted the evidence, uncertainty, and next human decision to be visible in the product—not hidden behind a success badge.
 
-**Status: ten inspectable workflow journeys; full enterprise suite INCOMPLETE.** The local workbench runs bounded public-source reviews and ten distinct organization-import review paths. The [hosted recorded lab](https://cayleb-james2008.github.io/agentic-resume/lab/) replays dated public results. Organization imports are local, require a permitted de-identified export, and cannot authenticate the submitter or source. Missing real sources and authority keep every full job `UNVERIFIED`. Five earlier local model samples have independently witnessed transport and cited output; the organization-import paths are deterministic and make no AI claim. None of this establishes completed company workflows, customer use, or commercial results.
+**Where it stands:** the local workbench offers bounded public-source reviews and ten organization-import review paths. The [hosted lab](https://cayleb-james2008.github.io/agentic-resume/lab/) replays dated public results; it does not fetch fresh sources. Organization imports stay on the local machine, use invented examples or permitted de-identified exports, and cannot authenticate the submitter or source. Missing private records and authority keep every full organization workflow `UNVERIFIED`. The 26 September 2026 local witness bundle records six model exchanges; five produced app-accepted, source-cited output. The organization-import paths are deterministic and make no AI claim. This does not establish completed company workflows, customer use, or commercial results.
+
+For the short project story, see [the case study](CASE-STUDY.md).
 
 ## Quickstart: fresh checkout
 
