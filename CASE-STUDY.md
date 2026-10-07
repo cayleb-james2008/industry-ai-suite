@@ -14,7 +14,7 @@ A result keeps the source state separate from the full-workflow status. It can s
 
 A fresh checkout can run the local workbench without an API key or a model server. From there, a reviewer can inspect ten distinct organization-import examples, see each bounded result and handoff, and read the source and privacy limits in the receipt. The [README](README.md) has the setup steps; [FREE-PATHS.md](FREE-PATHS.md) maps the public and local paths; [ENTERPRISE-INPUTS.md](ENTERPRISE-INPUTS.md) describes the import boundary.
 
-The repository also contains a dated witness bundle for five local model samples with cited output. That is evidence about those specific earlier exchanges—not a claim that every workflow uses a model or that a live provider was contacted during this verification.
+The 26 September 2026 witness bundle records six local model exchanges; five produced app-accepted, source-cited output. The first OnboardPath call failed the citation check; its corrected sixth call passed. These are specific, dated examples—not a claim that every workflow uses a model or that a provider was contacted during this verification.
 
 ## What I have not established
 
