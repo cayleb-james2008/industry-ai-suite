@@ -232,6 +232,76 @@ test("a file-read success cannot overwrite edits made while it is pending", asyn
   assert.deepEqual(workbench.errors, []);
 });
 
+test("changing review paths releases the Run button and ignores an older receipt", async () => {
+  const earlier = deferred();
+  const latest = deferred();
+  const workbench = makeWorkbench([earlier, latest]);
+  const earlierRun = workbench.context.submit({ preventDefault() {} });
+  const route = workbench.byId("input-route");
+  route.value = "enterprise";
+  route.dispatch("change");
+
+  assert.equal(workbench.elements.get("run-button").disabled, false);
+  workbench.context.payloadFor = () => ({ mode: "enterprise" });
+  const latestRun = workbench.context.submit({ preventDefault() {} });
+  earlier.resolve(response({ oldPublicReceipt: true }));
+  await earlierRun;
+
+  assert.equal(workbench.elements.get("run-button").disabled, true);
+  assert.deepEqual(workbench.rendered, []);
+  latest.resolve(response({ organizationReceipt: true }));
+  await latestRun;
+  assert.equal(workbench.elements.get("run-button").disabled, false);
+  assert.deepEqual(workbench.rendered, [{ workflow: "ledgerbridge", data: { organizationReceipt: true } }]);
+});
+
+test("an older path failure cannot replace the newly selected path", async () => {
+  const earlier = deferred();
+  const workbench = makeWorkbench([earlier]);
+  const pending = workbench.context.submit({ preventDefault() {} });
+  const route = workbench.byId("input-route");
+  route.value = "enterprise";
+  route.dispatch("change");
+  earlier.reject(new Error("Old public path failed."));
+  await pending;
+
+  assert.deepEqual(workbench.errors, []);
+  assert.deepEqual(workbench.rendered, []);
+  assert.equal(workbench.elements.get("run-button").disabled, false);
+});
+
+test("returning to a review path does not revive its pending receipt", async () => {
+  const earlier = deferred();
+  const workbench = makeWorkbench([earlier]);
+  const route = workbench.byId("input-route");
+  route.value = "enterprise";
+  route.dispatch("change");
+  workbench.context.payloadFor = () => ({ mode: "enterprise" });
+  const pending = workbench.context.submit({ preventDefault() {} });
+  route.value = "current";
+  route.dispatch("change");
+  route.value = "enterprise";
+  route.dispatch("change");
+  earlier.resolve(response({ staleOrganizationReceipt: true }));
+  await pending;
+
+  assert.deepEqual(workbench.rendered, []);
+  assert.deepEqual(workbench.errors, []);
+  assert.equal(workbench.elements.get("run-button").disabled, false);
+});
+
+test("changing review paths clears the prior downloadable receipt", () => {
+  const workbench = makeWorkbench([]);
+  vm.runInContext('lastReceipt = { oldPublicReceipt: true };', workbench.context);
+  workbench.elements.get("result-actions").hidden = false;
+  const route = workbench.byId("input-route");
+  route.value = "enterprise";
+  route.dispatch("change");
+
+  assert.equal(vm.runInContext("lastReceipt", workbench.context), null);
+  assert.equal(workbench.elements.get("result-actions").hidden, true);
+});
+
 test("a failed HTTP response stays an error and is not rendered as a receipt", async () => {
   const failure = deferred();
   const { context, elements, errors, rendered } = makeWorkbench([failure]);

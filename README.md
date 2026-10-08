@@ -8,7 +8,7 @@ For the short project story, see [the case study](CASE-STUDY.md).
 
 ## Quickstart: fresh checkout
 
-**Runtime:** Python 3 (the fresh-sandbox verification used CPython 3.14.7); source-tree workflows use the Python standard library. No API key or local model is required. `pytest` is optional and needed only to run the tests.
+**Runtime:** Python 3 (the fresh-sandbox verification used CPython 3.14.7); source-tree workflows use the Python standard library. No API key or local model is required. `pytest` is optional and needed for the Python tests; Node.js is needed only for the browser-logic tests below.
 
 ```sh
 git clone --branch main --depth 1 https://github.com/cayleb-james2008/industry-ai-suite.git
@@ -45,7 +45,7 @@ Every production command uses its live path; `run_demo()` and synthetic fixtures
 
 The [free-path matrix](FREE-PATHS.md) maps every product to its working public or local route, the official source terms, and the organization evidence still needed. No paid API is required to inspect the ten recorded journeys or to use the local review paths.
 
-Run `python3 -m webapp.server --port 18340` from this repository, then open `http://127.0.0.1:18340/`. Each product has a **Review path** selector. Switching products resets the result view and makes the selected workflow available immediately; an earlier in-progress request cannot replace that view. The first path keeps its existing public-source or bounded CSV review. **Organization bundle · local only** loads a safe invented example or a permitted, de-identified JSON export; the ten product-specific processors compute distinct results and produce source-bound receipts. [ENTERPRISE-INPUTS.md](ENTERPRISE-INPUTS.md) gives the exact starter envelope and minimal per-product input matrix. Results show source identity, limits, human handoff, and an optional downloadable JSON receipt. Marking a result reviewed affects only the current browser view; there is no send, publish, trading, posting, or account action. The server binds to numeric loopback, requires a page token and matching Origin for POSTs, does not log request bodies, and does not save supplied rows. The page token is local request friction, **not** organization authentication or tenant isolation. Do not use this local importer for confidential production records, credentials, or direct personal identifiers. Run `python3 -m pytest -q -p no:cacheprovider` for the suite and workbench checks.
+Run `python3 -m webapp.server --port 18340` from this repository, then open `http://127.0.0.1:18340/`. Each product has a **Review path** selector. Switching products or review paths clears the prior result and downloadable receipt, and makes the selected workflow available immediately; an earlier in-progress request cannot replace that view. The first path keeps its existing public-source or bounded CSV review. **Organization bundle · local only** loads a safe invented example or a permitted, de-identified JSON export; the ten product-specific processors compute distinct results and produce source-bound receipts. [ENTERPRISE-INPUTS.md](ENTERPRISE-INPUTS.md) gives the exact starter envelope and minimal per-product input matrix. Results show source identity, limits, human handoff, and an optional downloadable JSON receipt. Marking a result reviewed affects only the current browser view; there is no send, publish, trading, posting, or account action. The server binds to numeric loopback, requires a page token and matching Origin for POSTs, does not log request bodies, and does not save supplied rows. The page token is local request friction, **not** organization authentication or tenant isolation. Do not use this local importer for confidential production records, credentials, or direct personal identifiers. Run `python3 -m pytest -q -p no:cacheprovider` for the suite and workbench checks.
 
 The workbench is a functional local product surface, not a claim that missing private enterprise workflows or external deployment are complete. Its dark evidence-dossier theme is shared with the hosted recorded lab through the exporter. Its live public sources depend on their current availability. The separate model witness below concerns five bounded CLI samples, not every browser journey. The CLI remains available below.
 
@@ -126,6 +126,14 @@ python3 -m pytest -q -p no:cacheprovider
 ```
 
 The repository's `pytest.ini` selects importlib mode by default so same-named app test modules are collected without renaming or excluding tests. `tests/test_pytest_discovery.py` checks that root tests and all ten app suites are discovered.
+
+The Python suite does not run the JavaScript tests. With Node.js installed (the isolated verification used Node.js 26.7.0), also run both browser-logic suites from the repository root:
+
+```sh
+node --test tests/result-intro.test.cjs tests/workbench-navigation.test.cjs
+```
+
+These use Node's built-in test runner and DOM stubs; no npm install is needed. They check result copy, workflow and review-path navigation, and asynchronous import handling. They do not replace testing in a real browser or with the native file picker.
 
 ## Shared security foundation and human controls
 
