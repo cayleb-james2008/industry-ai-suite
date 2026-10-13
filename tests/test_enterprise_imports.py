@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+import tempfile
 import threading
 from unittest.mock import patch
 from urllib.error import HTTPError
@@ -16,6 +17,7 @@ from apps.sentineldesk.flow import correlate_alerts
 from suite_core import live_sources
 from webapp.enterprise.examples import EXAMPLES
 from webapp.runner import run
+from webapp.receipt_store import LocalReceiptStore
 from webapp.server import WorkbenchServer
 
 
@@ -207,7 +209,8 @@ def test_authentication_claims_and_unexpected_fields_are_rejected() -> None:
 
 
 def test_http_ten_jobs_and_duplicate_json_rejection() -> None:
-    server = WorkbenchServer(0)
+    temporary = tempfile.TemporaryDirectory()
+    server = WorkbenchServer(0, receipt_store=LocalReceiptStore(temporary.name))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     base = f"http://127.0.0.1:{server.server_port}"
@@ -229,3 +232,4 @@ def test_http_ten_jobs_and_duplicate_json_rejection() -> None:
         server.shutdown()
         server.server_close()
         thread.join(timeout=3)
+        temporary.cleanup()

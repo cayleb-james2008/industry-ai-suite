@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const source = fs.readFileSync(require.resolve("../webapp/static/app.js"), "utf8");
-const bootstrap = 'renderNav();select(location.hash.slice(1));window.addEventListener("hashchange",()=>select(location.hash.slice(1)));$("run-form").addEventListener("submit",submit);$("download-button").addEventListener("click",download);$("review-button").addEventListener("click",review);';
+const bootstrap = 'renderNav();select(location.hash.slice(1));window.addEventListener("hashchange",()=>select(location.hash.slice(1)));$("run-form").addEventListener("submit",submit);$("download-button").addEventListener("click",download);$("review-button").addEventListener("click",()=>review("REVIEWED"));$("changes-button").addEventListener("click",()=>review("CHANGES_REQUESTED"));$("refresh-history").addEventListener("click",refreshHistory);if(RECORDED){$("receipt-history").hidden=true;}else refreshHistory();';
 assert.ok(source.includes(bootstrap), "the workbench bootstrap should remain identifiable");
 
 function deferred() {
