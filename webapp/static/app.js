@@ -85,7 +85,7 @@ function setCopy(item,organization){const copy=organization?ORGANIZATION_COPY[it
 }
 
 function resetResultView(){viewRevision++;lastReceipt=null;
-  const button=$("run-button");button.disabled=false;button.textContent=RECORDED?"Explore recorded result ↗":"Run review ↗";$("result-content").replaceChildren();const empty=el("div","empty-state");appendText(empty,"span",null,"↳");appendText(empty,"p",null,RECORDED?"Open the dated result to inspect the recorded evidence and human handoff.":"Choose an input and run this workflow. The cited result will appear here.");$("result-content").append(empty);setState(RECORDED?"READY TO EXPLORE":"READY TO RUN",null);$("result-actions").hidden=true;$("changes-button").hidden=true;
+  const button=$("run-button");button.disabled=false;button.textContent=RECORDED?"Explore recorded result ↗":"Run review ↗";$("result-content").replaceChildren();const empty=el("div","empty-state");appendText(empty,"span",null,"↳");appendText(empty,"p",null,RECORDED?"Open the dated result to inspect the recorded evidence and human handoff.":"Choose an input and run this review tool. The cited result will appear here.");$("result-content").append(empty);setState(RECORDED?"READY TO EXPLORE":"READY TO RUN",null);$("result-actions").hidden=true;$("changes-button").hidden=true;
 }
 
 function select(slug,updateHash=false){const item=CATALOG.find(x=>x.slug===slug)||CATALOG[0];selectionRevision++;current=item;
