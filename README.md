@@ -1,4 +1,4 @@
-# Industry AI Suite — ten workflow prototypes, one shared evidence layer
+# Industry AI Suite — ten local review workflows, one shared evidence layer
 
 I’ve been building this as an independent engineering project: ten focused workflow packages on a shared Python foundation. I wanted the evidence, uncertainty, and next human decision to be visible in the product—not hidden behind a success badge.
 

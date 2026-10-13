@@ -68,8 +68,8 @@ def apply_local_ai(
     """Add a citation-checked local candidate; never falls back to generated text."""
     result = dict(receipt)
     result.update({
-        "local_processing_status": "PARTIAL",
-        "local_processing_reason": "The deterministic review is ready; optional local model drafting was not requested.",
+        "local_processing_status": "COMPLETE",
+        "local_processing_reason": "The selected deterministic review is complete; optional local model drafting was not requested.",
         "human_review_status": "PENDING",
         "local_ai_output": None,
         "local_ai_evidence_ids": [],

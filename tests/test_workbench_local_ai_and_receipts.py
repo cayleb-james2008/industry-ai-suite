@@ -229,3 +229,16 @@ def test_all_receipt_reads_and_mutations_require_local_origin_and_page_token(tmp
         server.shutdown()
         server.server_close()
         thread.join(timeout=3)
+
+
+def test_deterministic_review_completes_without_optional_model_dispatch() -> None:
+    def forbidden_factory(*_args, **_kwargs):
+        raise AssertionError("Optional model must not be invoked when not selected")
+    for slug, bundle in EXAMPLES.items():
+        receipt = run(slug, {"mode": "enterprise", "bundle": copy.deepcopy(bundle)})
+        result = apply_local_ai(receipt, requested=False, client_factory=forbidden_factory)
+        assert result["local_processing_status"] == "COMPLETE"
+        assert result["ai_invoked"] is False
+        assert result["local_ai_output"] is None
+        assert result["human_review_status"] == "PENDING"
+        assert result["source_status"] == receipt["source_status"]
