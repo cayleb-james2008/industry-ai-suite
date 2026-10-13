@@ -8,14 +8,17 @@ from __future__ import annotations
 import argparse
 import json
 import secrets
+from collections.abc import Callable
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from suite_core import LiveSourceError
+from suite_core import LiveSourceError, LocalOpenAIClient
 from .runner import SLUGS, run
 from .enterprise.common import strict_json_loads
 from .enterprise.examples import EXAMPLES
+from .local_ai import apply_local_ai
+from .receipt_store import LocalReceiptStore
 
 STATIC = Path(__file__).with_name("static")
 MAX_BODY = 128 * 1024
@@ -122,8 +125,76 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
     def _json(self, code: int, data: dict[str, object]) -> None:
         self._send(code, json.dumps(data, ensure_ascii=False, allow_nan=False).encode(), "application/json; charset=utf-8")
 
+    def _authorized(self) -> bool:
+        origin = self.headers.get("Origin")
+        allowed = {f"http://127.0.0.1:{self.server.server_port}"}
+        return origin in allowed and self.headers.get("X-Workbench-Token") == self.server.token
+
+    def _post_json(self) -> dict[str, object] | None:
+        if self.headers.get("Content-Type", "").split(";", 1)[0] != "application/json":
+            self._json(415, {"error": "Send JSON input."})
+            return None
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = 0
+        if not 0 < length <= MAX_BODY:
+            self._json(413, {"error": "Input is empty or exceeds 128 KB."})
+            return None
+        try:
+            payload = strict_json_loads(self.rfile.read(length))
+        except (ValueError, json.JSONDecodeError) as exc:
+            self._json(400, {"error": str(exc)[:300]})
+            return None
+        if not isinstance(payload, dict):
+            self._json(400, {"error": "Request must be a JSON object."})
+            return None
+        return payload
+
+    def _receipt_route(self, path: str) -> bool:
+        if not path.startswith("/api/receipts/"):
+            return False
+        if not self._authorized():
+            self._json(403, {"error": "Open the local workbench page before accessing saved receipts."})
+            return True
+        payload = self._post_json()
+        if payload is None:
+            return True
+        try:
+            if path == "/api/receipts/list" and payload == {}:
+                self._json(200, {"receipts": self.server.receipt_store.list()})
+                return True
+            parts = path.strip("/").split("/")
+            if (len(parts) == 4 and parts[:2] == ["api", "receipts"]
+                    and parts[3] == "review" and set(payload) == {"status"}):
+                record = self.server.receipt_store.review(parts[2], payload["status"])
+                self._json(200, {"receipt": record})
+                return True
+            if (len(parts) == 4 and parts[:2] == ["api", "receipts"]
+                    and parts[3] == "delete" and payload == {}):
+                self.server.receipt_store.delete(parts[2])
+                self._json(200, {"deleted": True})
+                return True
+        except KeyError:
+            self._json(404, {"error": "Saved receipt not found."})
+            return True
+        except ValueError:
+            self._json(400, {"error": "Unsupported receipt action."})
+            return True
+        except OSError:
+            self._json(503, {"error": "Local receipt history is unavailable; no submitted input was saved."})
+            return True
+        self._json(404, {"error": "Receipt route not found."})
+        return True
+
     def do_GET(self) -> None:
         path = urlsplit(self.path).path
+        if path.startswith("/api/receipts/"):
+            if not self._authorized():
+                self._json(403, {"error": "Open the local workbench page before accessing saved receipts."})
+            else:
+                self._json(405, {"error": "Use the local workbench receipt action."})
+            return
         if path == "/api/health":
             self._json(200, {"status": "ready", "workflows": list(SLUGS)})
             return
@@ -145,31 +216,31 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlsplit(self.path).path
+        if self._receipt_route(path):
+            return
         if not path.startswith("/api/run/") or path.rsplit("/", 1)[-1] not in SLUGS:
             self._json(404, {"error": "Route not found."})
             return
-        origin = self.headers.get("Origin")
-        allowed = {f"http://127.0.0.1:{self.server.server_port}"}
-        if origin not in allowed or self.headers.get("X-Workbench-Token") != self.server.token:
+        if not self._authorized():
             self._json(403, {"error": "Open the local workbench page before running a workflow."})
             return
-        if self.headers.get("Content-Type", "").split(";", 1)[0] != "application/json":
-            self._json(415, {"error": "Send JSON input."})
+        payload = self._post_json()
+        if payload is None:
             return
         try:
-            length = int(self.headers.get("Content-Length", "0"))
-        except ValueError:
-            length = 0
-        if not 0 < length <= MAX_BODY:
-            self._json(413, {"error": "Input is empty or exceeds 128 KB."})
-            return
-        try:
-            payload = strict_json_loads(self.rfile.read(length))
-            result = run(path.rsplit("/", 1)[-1], payload)
+            slug = path.rsplit("/", 1)[-1]
+            local_ai_requested = False
+            if payload.get("mode", "public") == "enterprise":
+                local_ai_requested = payload.pop("local_ai", False)
+                if type(local_ai_requested) is not bool:
+                    raise ValueError("Local model selection must be true or false.")
+            elif "local_ai" in payload:
+                raise ValueError("Local model drafting is available only for organization imports.")
+            result = run(slug, payload)
         except LiveSourceError as exc:
             self._json(200, _source_failure(path.rsplit("/", 1)[-1], exc.status))
             return
-        except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        except (ValueError, KeyError, TypeError) as exc:
             self._json(400, {"error": str(exc)[:300]})
             return
         except Exception:
@@ -179,6 +250,19 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             presentation = _source_status_presentation(result)
             if presentation is not None:
                 result = {**result, "workbench_status": presentation}
+        if result.get("input_mode") == "enterprise":
+            result = apply_local_ai(
+                result,
+                requested=local_ai_requested,
+                client_factory=self.server.local_model_factory,
+            )
+            try:
+                saved = self.server.receipt_store.save(result)
+            except (OSError, TypeError, ValueError):
+                self._json(503, {"error": "The minimized local receipt could not be saved. The submitted input was not stored."})
+                return
+            result["receipt_id"] = saved["receipt_id"]
+            result["minimized_receipt"] = saved
         try:
             self._json(200, result)
         except (TypeError, ValueError):
@@ -186,9 +270,17 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
 
 
 class WorkbenchServer(ThreadingHTTPServer):
-    def __init__(self, port: int) -> None:
+    def __init__(
+        self,
+        port: int,
+        *,
+        receipt_store: LocalReceiptStore | None = None,
+        local_model_factory: Callable[..., LocalOpenAIClient] = LocalOpenAIClient,
+    ) -> None:
         super().__init__(("127.0.0.1", port), WorkbenchHandler)
         self.token = secrets.token_urlsafe(32)
+        self.receipt_store = receipt_store or LocalReceiptStore()
+        self.local_model_factory = local_model_factory
 
 
 def main() -> None:

@@ -118,6 +118,15 @@ a:hover { color: var(--signal-dark); }
 .enterprise-fields .field textarea { min-height: 240px; }
 .enterprise-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin: .75rem 0; }
 .enterprise-actions .button { min-width: 0; }
+.enterprise-fields > .check-field { margin: .85rem 0; }
+.receipt-history { margin-top: 1.4rem; padding: 1.1rem; border: 1px solid var(--line); background: #111820; }
+.receipt-history__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.receipt-history__head h3 { margin: .15rem 0 .5rem; }
+.history-status { margin: .75rem 0; color: var(--muted); }
+.history-list { display: grid; gap: .75rem; }
+.history-card { display: grid; gap: .45rem; padding: .85rem; border: 1px solid #52606B; background: #0C1218; }
+.history-card > span { color: var(--muted); font-size: .83rem; }
+.history-card__actions { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .3rem; }
 .button {
   border-color: #81939E;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
